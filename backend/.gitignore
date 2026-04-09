@@ -1,0 +1,16 @@
+/.vs/*
+**/*.suo
+**/*.user
+**/*.bak
+**/*.orig
+**/UpgradeLog.htm
+**/bin/*
+**/obj/*
+**/App_Data/Logs/*
+**/ElmahLogs/*
+Logs
+/src/Hashim.JourneyPoint.Web.Host/web.config
+/src/Hashim.JourneyPoint.Web.Host/Hashim.JourneyPoint.Web.Core.xml
+/sh.exe.stackdump
+
+

@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Hashim.JourneyPoint.Web.Core</name>
+    </assembly>
+    <members>
+        <member name="T:Hashim.JourneyPoint.DbmsHelper">
+            <summary>
+            Dbms configuration helper
+            </summary>
+        </member>
+        <member name="M:Hashim.JourneyPoint.DbmsHelper.GetDbmsType(Microsoft.Extensions.Configuration.IConfigurationRoot)">
+            <summary>
+            Get current Dbms type
+            </summary>
+        </member>
+        <member name="M:Hashim.JourneyPoint.DbmsHelper.GetDefaultConnectionString(Microsoft.Extensions.Configuration.IConfigurationRoot)">
+            <summary>
+            Get default connection string
+            </summary>
+            <param name="config"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Hashim.JourneyPoint.Hangfire.HangfireAuthorizationFilter">
+            <summary>
+            Hangfire authorization filter: This should be obsolete since Shesha comes with Hangfire Authorization inbuilt
+            </summary>
+        </member>
+        <member name="M:Hashim.JourneyPoint.Hangfire.HangfireAuthorizationFilter.Authorize(Hangfire.Dashboard.DashboardContext)">
+            <summary>
+            
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Hashim.JourneyPoint.JourneyPointWebCoreModule">
+            <summary>
+            ReSharper disable once InconsistentNaming
+            </summary>
+        </member>
+        <member name="M:Hashim.JourneyPoint.JourneyPointWebCoreModule.#ctor(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary>
+            
+            </summary>
+            <param name="env"></param>
+        </member>
+        <member name="M:Hashim.JourneyPoint.JourneyPointWebCoreModule.PreInitialize">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Hashim.JourneyPoint.JourneyPointWebCoreModule.Initialize">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Hashim.JourneyPoint.Swagger.ApiExplorerGroupPerControllerConvention">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Hashim.JourneyPoint.Swagger.ApiExplorerGroupPerControllerConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel)">
+            <summary>
+            
+            </summary>
+            <param name="controller"></param>
+        </member>
+        <member name="M:Hashim.JourneyPoint.Swagger.ApiExplorerGroupPerControllerConvention.GroupInclusionPredicate(System.String,Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription)">
+            <summary>
+            
+            </summary>
+            <param name="docName"></param>
+            <param name="apiDescription"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Shesha.Identity.ExternalLoginInfoHelper">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Shesha.Identity.ExternalLoginInfoHelper.GetNameAndSurnameFromClaims(System.Collections.Generic.List{System.Security.Claims.Claim})">
+            <summary>
+            
+            </summary>
+            <param name="claims"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
