@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.shesha.io)",
+      "WebSearch",
+      "Bash(xargs grep:*)",
+      "Bash(cd /tmp)",
+      "Bash(unzip -o \"/c/Users/Hashim/.nuget/packages/shesha.fluentmigrator/0.0.0-build105662/shesha.fluentmigrator.0.0.0-build105662.nupkg\" \"*.cs\")",
+      "Bash(ls /tmp/*.cs)",
+      "Bash(unzip -l \"/c/Users/Hashim/.nuget/packages/shesha.fluentmigrator/0.0.0-build105662/shesha.fluentmigrator.0.0.0-build105662.nupkg\")",
+      "Bash(cp \"/c/Users/Hashim/.nuget/packages/shesha.fluentmigrator/0.0.0-build105662/lib/net8.0/Shesha.FluentMigrator.pdb\" .)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(del \"C:\\\\Users\\\\Hashim\\\\Downloads\\\\Hashim.JourneyPoint\\\\backend\\\\src\\\\Hashim.JourneyPoint.Domain\\\\Migrations\\\\M20260409150000.cs\")",
+      "Bash(Remove-Item \"C:\\\\Users\\\\Hashim\\\\Downloads\\\\Hashim.JourneyPoint\\\\backend\\\\src\\\\Hashim.JourneyPoint.Domain\\\\Migrations\\\\M20260409150000.cs\")",
+      "Bash(powershell -Command \"Remove-Item 'C:\\\\Users\\\\Hashim\\\\Downloads\\\\Hashim.JourneyPoint\\\\backend\\\\src\\\\Hashim.JourneyPoint.Domain\\\\Migrations\\\\M20260409150000.cs'\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Hires/Enums/HireLifecycleState.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Hires/Enums/JourneyStatus.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Hires/Enums/JourneyTaskStatus.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Hires/Enums/WelcomeNotificationStatus.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/OnboardingPlans/Enums/OnboardingPlanStatus.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/OnboardingPlans/Enums/OnboardingTaskAcknowledgementRule.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Engagement/Enums/EngagementClassification.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Engagement/Enums/AtRiskFlagStatus.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Engagement/Enums/AtRiskResolutionType.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Audit/Enums/GenerationLogWorkflowType.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Wellness/WellnessCheckIn.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Wellness/WellnessQuestion.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Engagement/EngagementSnapshot.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Engagement/AtRiskFlag.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Core/Domains/Audit/GenerationLog.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Application/Services/HireService/IHireAppService.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Application/Services/JourneyService/IJourneyAppService.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Application/Services/OnboardingPlanService/IOnboardingPlanAppService.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Application/Services/OnboardingDocumentService/IOnboardingDocumentAppService.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/hashimaziz88/JourneyPoint/main/aspnet-core/src/JourneyPoint.Application/Services/WellnessService/IWellnessAppService.cs\")"
+    ]
+  }
+}

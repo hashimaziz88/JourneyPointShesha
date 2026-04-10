@@ -1,29 +1,41 @@
+using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Shesha.Domain.Attributes;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
 {
     /// <summary>
-    /// A phase or section within an OnboardingPlan. Groups related OnboardingTasks together
-    /// (e.g. "Week 1 — Getting Started", "Month 1 — Technical Ramp-Up").
+    /// An ordered phase or section inside an OnboardingPlan.
+    /// Groups related OnboardingTasks together (e.g. "Week 1 — Getting Started").
+    /// OrderIndex must be unique within its parent plan.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.OnboardingModule")]
-    public class OnboardingModule : FullAuditedEntity<Guid>
+    public class OnboardingModule : FullAuditedEntity<Guid>, IMustHaveTenant
     {
-        /// <summary>The plan this module belongs to.</summary>
-        public virtual OnboardingPlan Plan { get; set; }
+        /// <summary>Tenant ownership.</summary>
+        public virtual int TenantId { get; set; }
+
+        /// <summary>FK — parent plan.</summary>
+        public virtual Guid OnboardingPlanId { get; set; }
+
+        /// <summary>Navigation to parent plan.</summary>
+        public virtual OnboardingPlan OnboardingPlan { get; set; }
 
         /// <summary>Display name of the module/phase.</summary>
+        [Required, StringLength(200)]
         public virtual string Name { get; set; }
 
-        /// <summary>Optional description of the module's objectives.</summary>
+        /// <summary>Description of the module's objectives.</summary>
+        [Required, StringLength(2000)]
         public virtual string Description { get; set; }
 
-        /// <summary>Display order of this module within the plan.</summary>
-        public virtual int SortOrder { get; set; }
+        /// <summary>Display and execution order within the plan. Must be unique per plan.</summary>
+        public virtual int OrderIndex { get; set; }
 
-        /// <summary>Expected duration of this phase in calendar days.</summary>
-        public virtual int DurationDays { get; set; }
+        /// <summary>Template tasks contained in this module.</summary>
+        public virtual ICollection<OnboardingTask> Tasks { get; set; }
     }
 }

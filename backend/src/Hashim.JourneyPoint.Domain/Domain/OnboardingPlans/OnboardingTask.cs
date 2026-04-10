@@ -1,45 +1,54 @@
+using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Shesha.Domain.Attributes;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
 {
     /// <summary>
-    /// A task template within an OnboardingModule. Defines the work that needs to be done
-    /// during that phase of onboarding. Copied to JourneyTask records when a Journey is generated.
-    /// Changes to OnboardingTask do not affect JourneyTasks already generated.
+    /// A reusable template task inside an OnboardingModule.
+    /// Defines the work to be done during a phase of onboarding.
+    /// Copied to JourneyTask records at journey generation time.
+    /// Changes to an OnboardingTask do not affect JourneyTasks already generated.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.OnboardingTask")]
-    public class OnboardingTask : FullAuditedEntity<Guid>
+    public class OnboardingTask : FullAuditedEntity<Guid>, IMustHaveTenant
     {
-        /// <summary>The module this task belongs to.</summary>
-        public virtual OnboardingModule Module { get; set; }
+        /// <summary>Tenant ownership.</summary>
+        public virtual int TenantId { get; set; }
 
-        /// <summary>Display title of the task.</summary>
+        /// <summary>FK — parent module.</summary>
+        public virtual Guid OnboardingModuleId { get; set; }
+
+        /// <summary>Navigation to parent module.</summary>
+        public virtual OnboardingModule OnboardingModule { get; set; }
+
+        /// <summary>Task title.</summary>
+        [Required, StringLength(200)]
         public virtual string Title { get; set; }
 
         /// <summary>Full description of what the assignee needs to do.</summary>
+        [Required, StringLength(4000)]
         public virtual string Description { get; set; }
 
         /// <summary>Functional category of the task.</summary>
-        [ReferenceList("JourneyPoint", "TaskCategories")]
-        public virtual RefListTaskCategory? Category { get; set; }
+        [ReferenceList("JourneyPoint", "OnboardingTaskCategories")]
+        public virtual OnboardingTaskCategory Category { get; set; }
 
-        /// <summary>Which role is responsible for completing this task.</summary>
-        [ReferenceList("JourneyPoint", "TaskAssignedTo")]
-        public virtual RefListTaskAssignedTo? AssignedTo { get; set; }
+        /// <summary>Display order within the module. Must be unique per module.</summary>
+        public virtual int OrderIndex { get; set; }
 
-        /// <summary>
-        /// Number of days after the hire's StartDate by which this task should be due.
-        /// Used to calculate JourneyTask.DueDate at journey generation time.
-        /// </summary>
+        /// <summary>Days from the hire's StartDate when the generated JourneyTask will be due.</summary>
         public virtual int DueDayOffset { get; set; }
 
-        /// <summary>When true, the generated JourneyTask will require explicit hire acknowledgement.</summary>
-        public virtual bool RequiresAcknowledgement { get; set; }
+        /// <summary>Which role is responsible for completing this task.</summary>
+        [ReferenceList("JourneyPoint", "OnboardingTaskAssignmentTargets")]
+        public virtual OnboardingTaskAssignmentTarget AssignmentTarget { get; set; }
 
-        /// <summary>Display order of this task within its module.</summary>
-        public virtual int SortOrder { get; set; }
+        /// <summary>Whether the hire must acknowledge this task before completing it.</summary>
+        [ReferenceList("JourneyPoint", "OnboardingTaskAcknowledgementRules")]
+        public virtual OnboardingTaskAcknowledgementRule AcknowledgementRule { get; set; }
     }
 }

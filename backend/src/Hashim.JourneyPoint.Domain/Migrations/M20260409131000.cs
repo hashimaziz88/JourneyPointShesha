@@ -26,7 +26,7 @@ namespace Hashim.JourneyPoint.Domain.Migrations
                 .WithColumn("PaymentDate").AsDateTime().Nullable();
         }
         /// <summary>
-        /// Code to execute when rolling back the migration
+        /// Code to execute when rolling back tuhe migration
         /// </summary>
         public override void Down()
         {

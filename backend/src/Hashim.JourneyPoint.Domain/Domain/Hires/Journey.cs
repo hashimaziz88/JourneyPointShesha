@@ -1,39 +1,50 @@
+using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Hashim.JourneyPoint.Domain.Domain.OnboardingPlans;
 using Shesha.Domain.Attributes;
 using System;
+using System.Collections.Generic;
 
 namespace Hashim.JourneyPoint.Domain.Domain.Hires
 {
     /// <summary>
-    /// The live onboarding instance for a specific hire.
-    /// Generated from an OnboardingPlan at enrolment time. Each hire has at most one active Journey.
-    /// Changes to the source OnboardingPlan do not affect a Journey that has already been generated.
+    /// The hire-specific copy of a published onboarding plan, representing the live onboarding instance.
+    /// Generated from an OnboardingPlan when the Facilitator activates the hire.
+    /// Changes to the source OnboardingPlan after generation do not affect this Journey.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.Journey")]
-    public class Journey : FullAuditedEntity<Guid>
+    public class Journey : FullAuditedEntity<Guid>, IMustHaveTenant
     {
-        /// <summary>The hire this journey belongs to.</summary>
+        /// <summary>Tenant ownership.</summary>
+        public virtual int TenantId { get; set; }
+
+        /// <summary>FK — the hire this journey belongs to.</summary>
+        public virtual Guid HireId { get; set; }
+
+        /// <summary>Navigation to hire.</summary>
         public virtual Hire Hire { get; set; }
 
-        /// <summary>Snapshot reference to the plan this journey was generated from.</summary>
+        /// <summary>FK — the source onboarding plan this journey was generated from.</summary>
+        public virtual Guid OnboardingPlanId { get; set; }
+
+        /// <summary>Navigation to source plan.</summary>
         public virtual OnboardingPlan OnboardingPlan { get; set; }
 
-        /// <summary>Current lifecycle status of the journey.</summary>
+        /// <summary>Current lifecycle state of the journey.</summary>
         [ReferenceList("JourneyPoint", "JourneyStatuses")]
-        public virtual RefListJourneyStatus? Status { get; set; }
+        public virtual JourneyStatus Status { get; set; }
 
-        /// <summary>Date and time the journey was activated by the Facilitator.</summary>
+        /// <summary>When the journey was activated by the Facilitator.</summary>
         public virtual DateTime? ActivatedAt { get; set; }
 
-        /// <summary>Date and time the journey was completed (all tasks done).</summary>
+        /// <summary>When the journey was paused by the Facilitator.</summary>
+        public virtual DateTime? PausedAt { get; set; }
+
+        /// <summary>When the journey was completed (all tasks done).</summary>
         public virtual DateTime? CompletedAt { get; set; }
 
-        /// <summary>
-        /// AI-generated personalisation notes produced by GroqPersonalisationService.
-        /// Stored as context for how tasks were personalised for this hire.
-        /// </summary>
-        public virtual string PersonalisationNotes { get; set; }
+        /// <summary>All tasks in this journey (copied from OnboardingTask at generation time).</summary>
+        public virtual ICollection<JourneyTask> Tasks { get; set; }
     }
 }
