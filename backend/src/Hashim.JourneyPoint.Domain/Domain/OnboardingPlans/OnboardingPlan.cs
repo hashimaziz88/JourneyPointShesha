@@ -14,7 +14,7 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
     /// journeys already generated from it.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.OnboardingPlan")]
-    public class OnboardingPlan : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class OnboardingPlan : FullAuditedEntity<Guid>
     {
         /// <summary>Tenant ownership.</summary>
         public virtual int TenantId { get; set; }

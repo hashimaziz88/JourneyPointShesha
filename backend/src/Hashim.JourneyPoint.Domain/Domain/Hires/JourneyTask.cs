@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Hashim.JourneyPoint.Domain.Domain.OnboardingPlans;
@@ -14,11 +13,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.Hires
     /// add, or soft-delete Pending tasks. Completed tasks must never be deleted.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.JourneyTask")]
-    public class JourneyTask : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class JourneyTask : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — parent journey.</summary>
         public virtual Guid JourneyId { get; set; }
 

@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Shesha.Domain.Attributes;
 using System;
@@ -12,11 +11,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.Wellness
     /// Answers are saved incrementally; submission requires all questions to be answered.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.WellnessQuestion")]
-    public class WellnessQuestion : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class WellnessQuestion : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — parent check-in.</summary>
         public virtual Guid WellnessCheckInId { get; set; }
 

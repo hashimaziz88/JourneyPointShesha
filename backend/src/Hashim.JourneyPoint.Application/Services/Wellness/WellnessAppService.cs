@@ -17,6 +17,7 @@ namespace Hashim.JourneyPoint.Common.Services.Wellness
     /// Manages wellness check-ins for hires during their onboarding journey.
     /// Check-in generation delegates to WellnessManager.
     /// </summary>
+    [Route("api/services/app/Wellness/[action]")]
     public class WellnessAppService : SheshaAppServiceBase
     {
         private readonly IRepository<WellnessCheckIn, Guid> _checkInRepository;
@@ -37,7 +38,7 @@ namespace Hashim.JourneyPoint.Common.Services.Wellness
         }
 
         /// <summary>Returns a summary of all wellness check-ins for a hire, ordered by period.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<List<DynamicDto<WellnessCheckIn, Guid>>> GetHireWellnessOverview(Guid hireId)
         {
             var checkIns = await _checkInRepository.GetAllListAsync(c => c.HireId == hireId);
@@ -48,7 +49,7 @@ namespace Hashim.JourneyPoint.Common.Services.Wellness
         }
 
         /// <summary>Returns the full detail of a single check-in including all questions and answers.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<DynamicDto<WellnessCheckIn, Guid>> GetCheckInDetail(Guid checkInId)
         {
             var checkIn = await _checkInRepository.GetAsync(checkInId);
@@ -56,7 +57,7 @@ namespace Hashim.JourneyPoint.Common.Services.Wellness
         }
 
         /// <summary>Saves the hire's answer to a single WellnessQuestion. Answers are saved incrementally.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<WellnessQuestion, Guid>> SaveAnswer(SaveAnswerDto input)
         {
             var question = await _questionRepository.GetAsync(input.QuestionId);
@@ -70,7 +71,7 @@ namespace Hashim.JourneyPoint.Common.Services.Wellness
         /// Calls Groq to generate a suggested answer for a WellnessQuestion based on the hire's context.
         /// The suggestion is stored on the question but not applied until the hire chooses to use it.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<WellnessQuestion, Guid>> GenerateAnswerSuggestion(Guid questionId)
         {
             // TODO: delegate to GroqPersonalisationService for context-aware answer suggestion
@@ -81,7 +82,7 @@ namespace Hashim.JourneyPoint.Common.Services.Wellness
         /// Submits a completed check-in. Validates that all questions have answers,
         /// then triggers Groq to generate an AI summary for the Facilitator.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<WellnessCheckIn, Guid>> SubmitCheckIn(Guid checkInId)
         {
             var checkIn = await _checkInRepository.GetAsync(checkInId);
@@ -108,7 +109,7 @@ namespace Hashim.JourneyPoint.Common.Services.Wellness
         /// Generates the milestone WellnessCheckIn schedule for a journey.
         /// Called internally when a journey is activated — not intended for direct external use.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task GenerateCheckInsForJourney(Guid journeyId)
         {
             var journey = await _journeyRepository.GetAsync(journeyId);

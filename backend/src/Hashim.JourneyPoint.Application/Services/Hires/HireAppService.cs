@@ -17,6 +17,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
     /// Manages Hire records. The Facilitator uses this service to create new hires,
     /// view hire details, and trigger welcome notifications.
     /// </summary>
+    [Route("api/services/app/Hire/[action]")]
     public class HireAppService : SheshaAppServiceBase
     {
         private readonly IRepository<Hire, Guid> _hireRepository;
@@ -31,7 +32,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Returns a paged list of all hires for the current tenant.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<List<DynamicDto<Hire, Guid>>> GetHires()
         {
             var hires = await _hireRepository.GetAllListAsync();
@@ -42,7 +43,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Returns full details of a single hire including their journey summary.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<DynamicDto<Hire, Guid>> GetDetail(Guid id)
         {
             var hire = await _hireRepository.GetAsync(id);
@@ -50,7 +51,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Returns a list of users eligible to be assigned as a manager for a hire.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<List<object>> GetManagerOptions()
         {
             // Returns ABP users with the Manager role — implementation uses UserManager
@@ -61,7 +62,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         /// Creates a new hire record in Pending status.
         /// The caller is responsible for triggering JourneyAppService.GenerateDraft after creation.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<Hire, Guid>> Create(CreateHireDto input)
         {
             var plan = await _planRepository.GetAsync(input.OnboardingPlanId);
@@ -86,7 +87,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Resends the welcome onboarding notification email to the hire.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task ResendWelcomeNotification(Guid hireId)
         {
             var hire = await _hireRepository.GetAsync(hireId);

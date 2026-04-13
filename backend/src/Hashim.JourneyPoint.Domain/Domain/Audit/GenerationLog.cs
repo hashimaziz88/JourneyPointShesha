@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Hashim.JourneyPoint.Domain.Domain.Hires;
@@ -15,11 +14,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.Audit
     /// API keys and full prompt payloads are never stored here — only summaries safe for logging.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.GenerationLog")]
-    public class GenerationLog : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class GenerationLog : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>The type of AI workflow that produced this log entry.</summary>
         [ReferenceList("JourneyPoint", "GenerationLogWorkflowTypes")]
         public virtual GenerationLogWorkflowType WorkflowType { get; set; }

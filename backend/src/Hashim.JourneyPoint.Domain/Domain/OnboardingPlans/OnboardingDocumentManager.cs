@@ -68,8 +68,7 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
                 StoragePath      = storagePath,
                 ContentType      = contentType,
                 FileSizeBytes    = fileSizeBytes,
-                Status           = OnboardingDocumentStatus.Uploaded,
-                TenantId         = plan.TenantId
+                Status           = OnboardingDocumentStatus.Uploaded
             };
             return await _documentRepository.InsertAsync(document);
         }
@@ -129,7 +128,6 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
             var task = new OnboardingTask
             {
                 OnboardingModuleId  = module.Id,
-                TenantId            = module.TenantId,
                 Title               = proposal.Title,
                 Description         = proposal.Description,
                 Category            = proposal.Category,

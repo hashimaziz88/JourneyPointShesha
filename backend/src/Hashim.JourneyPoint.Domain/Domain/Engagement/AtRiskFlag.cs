@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Hashim.JourneyPoint.Domain.Domain.Hires;
@@ -14,11 +13,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.Engagement
     /// via the pipeline board. Resolved flags are retained for audit history.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.AtRiskFlag")]
-    public class AtRiskFlag : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class AtRiskFlag : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — hire the flag is raised for.</summary>
         public virtual Guid HireId { get; set; }
 

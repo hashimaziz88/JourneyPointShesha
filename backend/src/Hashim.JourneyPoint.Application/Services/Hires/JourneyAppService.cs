@@ -18,6 +18,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
     /// Journey generation delegates to HireJourneyManager.
     /// Wellness check-in generation delegates to WellnessManager on activation.
     /// </summary>
+    [Route("api/services/app/Journey/[action]")]
     public class JourneyAppService : SheshaAppServiceBase
     {
         private readonly IRepository<Journey, Guid> _journeyRepository;
@@ -41,7 +42,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Generates a Draft journey for a hire by copying all tasks from their OnboardingPlan.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<Journey, Guid>> GenerateDraft(Guid hireId)
         {
             var journey = await _hireJourneyManager.CreateDraftJourneyAsync(hireId);
@@ -49,7 +50,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Returns the Draft journey for a hire, including all pending tasks.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<DynamicDto<Journey, Guid>> GetDraft(Guid hireId)
         {
             var journey = await _journeyRepository.FirstOrDefaultAsync(j =>
@@ -62,7 +63,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Returns the active journey for the currently logged-in enrolee.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<DynamicDto<Journey, Guid>> GetMyJourney()
         {
             var hire = await _hireRepository.FirstOrDefaultAsync(h => h.PlatformUserId == AbpSession.UserId);
@@ -79,7 +80,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Returns all JourneyTasks assigned to the currently logged-in manager.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<List<DynamicDto<JourneyTask, Guid>>> GetManagerTasks()
         {
             var managedHires = await _hireRepository.GetAllListAsync(h => h.ManagerUserId == AbpSession.UserId);
@@ -103,7 +104,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Returns a single JourneyTask for the currently logged-in enrolee.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<DynamicDto<JourneyTask, Guid>> GetMyTask(Guid taskId)
         {
             var task = await _taskRepository.GetAsync(taskId);
@@ -111,7 +112,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Returns a single JourneyTask for the currently logged-in manager.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<DynamicDto<JourneyTask, Guid>> GetManagerTask(Guid taskId)
         {
             var task = await _taskRepository.GetAsync(taskId);
@@ -119,7 +120,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Records that the enrolee has acknowledged a task that requires acknowledgement.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<JourneyTask, Guid>> AcknowledgeMyTask(Guid taskId)
         {
             var task = await _taskRepository.GetAsync(taskId);
@@ -133,7 +134,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Marks a JourneyTask as Complete for the currently logged-in enrolee.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<JourneyTask, Guid>> CompleteMyTask(Guid taskId)
         {
             var task = await _taskRepository.GetAsync(taskId);
@@ -150,7 +151,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Marks a manager-assigned JourneyTask as Complete.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<JourneyTask, Guid>> CompleteManagerTask(Guid taskId)
         {
             var task = await _taskRepository.GetAsync(taskId);
@@ -162,7 +163,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Updates the details of an existing JourneyTask. Facilitator only.</summary>
-        [HttpPut, Route("[action]")]
+        [HttpPut]
         public async Task<DynamicDto<JourneyTask, Guid>> UpdateTask(UpdateJourneyTaskDto input)
         {
             var task = await _taskRepository.GetAsync(input.TaskId);
@@ -179,7 +180,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Adds a new ad-hoc task to an active journey. Facilitator only.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<JourneyTask, Guid>> AddTask(AddJourneyTaskDto input)
         {
             var journey = await _journeyRepository.GetAsync(input.JourneyId);
@@ -187,7 +188,6 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
             var task = new JourneyTask
             {
                 JourneyId           = journey.Id,
-                TenantId            = journey.TenantId,
                 Title               = input.Title,
                 Description         = input.Description,
                 Category            = input.Category,
@@ -203,7 +203,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Soft-deletes a Pending JourneyTask. Only Pending tasks may be removed.</summary>
-        [HttpDelete, Route("[action]")]
+        [HttpDelete]
         public async Task RemovePendingTask(Guid taskId)
         {
             var task = await _taskRepository.GetAsync(taskId);
@@ -218,7 +218,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         /// Sends the hire's profile and plan context to Groq and returns AI personalisation suggestions.
         /// Marks affected JourneyTask records with PersonalisedAt after application.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<Journey, Guid>> RequestPersonalisation(Guid journeyId)
         {
             // TODO: delegate to GroqPersonalisationService
@@ -226,7 +226,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         }
 
         /// <summary>Applies the previously generated AI personalisation to the journey's tasks.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<Journey, Guid>> ApplyPersonalisation(ApplyPersonalisationDto input)
         {
             // TODO: parse PersonalisationJson and update affected JourneyTask records
@@ -237,7 +237,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         /// Activates a Draft journey, making it visible to the hire in their portal.
         /// Also generates wellness check-ins for each milestone period.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<Journey, Guid>> Activate(Guid journeyId)
         {
             var journey = await _hireJourneyManager.ActivateJourneyAsync(journeyId);

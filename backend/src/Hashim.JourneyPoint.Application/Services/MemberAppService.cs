@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace Hashim.JourneyPoint.Common.Services
 {
+    [Route("api/services/app/Member/[action]")]
     public class MemberAppService : SheshaAppServiceBase
     {
         private readonly IRepository<Member, Guid> _memberRepository;
@@ -24,7 +25,7 @@ namespace Hashim.JourneyPoint.Common.Services
             _membershipPaymentRepository = membershipPaymentRepository;
         }
 
-        [HttpPut, Route("[action]/{memberId}")]
+        [HttpPut, Route("{memberId}")]
         public async Task<DynamicDto<Member, Guid>> ActivateMembership(Guid memberId)
         {
             var member = await _memberRepository.GetAsync(memberId);

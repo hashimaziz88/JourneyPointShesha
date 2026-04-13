@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Hashim.JourneyPoint.Domain.Domain.Hires;
@@ -16,11 +15,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.Wellness
     /// for Facilitator review on the pipeline board.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.WellnessCheckIn")]
-    public class WellnessCheckIn : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class WellnessCheckIn : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — the hire this check-in is for.</summary>
         public virtual Guid HireId { get; set; }
 

@@ -19,6 +19,7 @@ namespace Hashim.JourneyPoint.Common.Services.Engagement
     /// Score computation delegates to EngagementManager.
     /// Surfaces at-risk hires, latest engagement snapshots, and flag management.
     /// </summary>
+    [Route("api/services/app/Engagement/[action]")]
     public class EngagementAppService : SheshaAppServiceBase
     {
         private readonly IRepository<EngagementSnapshot, Guid> _snapshotRepository;
@@ -48,7 +49,7 @@ namespace Hashim.JourneyPoint.Common.Services.Engagement
         /// Returns all active hires grouped by engagement classification for the Kanban pipeline board.
         /// Each column (Healthy / NeedsAttention / AtRisk) contains hire summaries with latest scores.
         /// </summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<object> GetPipelineBoard()
         {
             var activeHires = await _hireRepository.GetAllListAsync(h => h.Status == HireLifecycleState.Active);
@@ -72,7 +73,7 @@ namespace Hashim.JourneyPoint.Common.Services.Engagement
         /// Returns the engagement intelligence summary for a single hire, including score history,
         /// active at-risk flags, and recent task activity.
         /// </summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<object> GetHireIntelligence(Guid hireId)
         {
             var hire = await _hireRepository.GetAsync(hireId);
@@ -104,7 +105,7 @@ namespace Hashim.JourneyPoint.Common.Services.Engagement
         /// Computes and persists a fresh engagement snapshot for a hire.
         /// Delegates the scoring calculation to EngagementManager.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<EngagementSnapshot, Guid>> ComputeScore(Guid hireId)
         {
             var journey = await _journeyRepository.FirstOrDefaultAsync(j =>
@@ -121,7 +122,7 @@ namespace Hashim.JourneyPoint.Common.Services.Engagement
         /// Marks an Active AtRiskFlag as Acknowledged, indicating the Facilitator is aware
         /// and is taking action.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<AtRiskFlag, Guid>> AcknowledgeAtRiskFlag(AcknowledgeFlagDto input)
         {
             var flag = await _flagRepository.GetAsync(input.FlagId);
@@ -141,7 +142,7 @@ namespace Hashim.JourneyPoint.Common.Services.Engagement
         /// <summary>
         /// Marks an Acknowledged AtRiskFlag as Resolved, indicating the hire is no longer at risk.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<AtRiskFlag, Guid>> ResolveAtRiskFlag(ResolveFlagDto input)
         {
             var flag = await _flagRepository.GetAsync(input.FlagId);

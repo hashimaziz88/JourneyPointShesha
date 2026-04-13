@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Shesha.Domain.Attributes;
 using System;
@@ -13,11 +12,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
     /// OrderIndex must be unique within its parent plan.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.OnboardingModule")]
-    public class OnboardingModule : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class OnboardingModule : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — parent plan.</summary>
         public virtual Guid OnboardingPlanId { get; set; }
 

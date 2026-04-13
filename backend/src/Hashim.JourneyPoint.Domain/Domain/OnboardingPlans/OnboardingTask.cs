@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Shesha.Domain.Attributes;
@@ -14,11 +13,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
     /// Changes to an OnboardingTask do not affect JourneyTasks already generated.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.OnboardingTask")]
-    public class OnboardingTask : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class OnboardingTask : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — parent module.</summary>
         public virtual Guid OnboardingModuleId { get; set; }
 

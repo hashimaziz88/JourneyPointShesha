@@ -154,10 +154,10 @@ namespace Hashim.JourneyPoint.Domain.Domain.Hires
         {
             var journey = new Journey
             {
+
                 HireId = hire.Id,
                 OnboardingPlanId = hire.OnboardingPlanId,
-                Status = JourneyStatus.Draft,
-                TenantId = hire.TenantId
+                Status = JourneyStatus.Draft
             };
             return await _journeyRepository.InsertAsync(journey);
         }
@@ -182,7 +182,6 @@ namespace Hashim.JourneyPoint.Domain.Domain.Hires
             return new JourneyTask
             {
                 JourneyId = journey.Id,
-                TenantId = hire.TenantId,
                 SourceOnboardingTaskId = task.Id,
                 SourceOnboardingModuleId = module.Id,
                 ModuleTitle = module.Name,

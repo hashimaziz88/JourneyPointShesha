@@ -88,8 +88,7 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
                 Description = source.Description,
                 TargetAudience = source.TargetAudience,
                 DurationDays = source.DurationDays,
-                Status = OnboardingPlanStatus.Draft,
-                TenantId = source.TenantId
+                Status = OnboardingPlanStatus.Draft
             };
             return await _planRepository.InsertAsync(clone);
         }
@@ -101,20 +100,19 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
 
             foreach (var module in orderedModules)
             {
-                var clonedModule = await InsertClonedModuleAsync(module, clone.Id, clone.TenantId);
+                var clonedModule = await InsertClonedModuleAsync(module, clone.Id);
                 await CloneTasksAsync(module.Id, clonedModule);
             }
         }
 
-        private async Task<OnboardingModule> InsertClonedModuleAsync(OnboardingModule source, Guid newPlanId, int tenantId)
+        private async Task<OnboardingModule> InsertClonedModuleAsync(OnboardingModule source, Guid newPlanId)
         {
             var clone = new OnboardingModule
             {
                 OnboardingPlanId = newPlanId,
                 Name = source.Name,
                 Description = source.Description,
-                OrderIndex = source.OrderIndex,
-                TenantId = tenantId
+                OrderIndex = source.OrderIndex
             };
             return await _moduleRepository.InsertAsync(clone);
         }
@@ -133,7 +131,6 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
             return new OnboardingTask
             {
                 OnboardingModuleId = newModule.Id,
-                TenantId = newModule.TenantId,
                 Title = source.Title,
                 Description = source.Description,
                 Category = source.Category,

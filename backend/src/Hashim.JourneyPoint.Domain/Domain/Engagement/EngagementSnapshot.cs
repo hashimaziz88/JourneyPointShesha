@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Hashim.JourneyPoint.Domain.Domain.Hires;
@@ -13,11 +12,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.Engagement
     /// Computed by EngagementScoreService on a schedule and on significant task events.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.EngagementSnapshot")]
-    public class EngagementSnapshot : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class EngagementSnapshot : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — hire being scored.</summary>
         public virtual Guid HireId { get; set; }
 

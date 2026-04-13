@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Shesha.Domain.Attributes;
@@ -15,11 +14,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
     /// The full document content is never stored in application logs.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.OnboardingDocument")]
-    public class OnboardingDocument : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class OnboardingDocument : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — parent plan.</summary>
         public virtual Guid OnboardingPlanId { get; set; }
 

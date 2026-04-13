@@ -13,13 +13,14 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
     /// The markdown format uses headings for modules and list items for tasks.
     /// Preview shows what will be created before the Facilitator commits.
     /// </summary>
+    [Route("api/services/app/MarkdownImport/[action]")]
     public class MarkdownImportAppService : SheshaAppServiceBase
     {
         /// <summary>
         /// Parses markdown content and returns a preview of the plan structure that would be created,
         /// without persisting anything to the database.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<object> Preview(MarkdownPreviewDto input)
         {
             // TODO: implement markdown parser → return preview DTO (modules + tasks)
@@ -29,7 +30,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
         /// <summary>
         /// Parses markdown content and persists it as a Draft OnboardingPlan with modules and tasks.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<OnboardingPlan, Guid>> SaveDraft(SaveDraftFromMarkdownDto input)
         {
             // TODO: parse markdown, create OnboardingPlan + OnboardingModules + OnboardingTasks

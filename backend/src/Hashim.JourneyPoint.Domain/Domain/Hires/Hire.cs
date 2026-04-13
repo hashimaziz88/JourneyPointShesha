@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Hashim.JourneyPoint.Domain.Domain.OnboardingPlans;
@@ -14,11 +13,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.Hires
     /// one OnboardingPlan, which generates their Journey upon activation.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.Hire")]
-    public class Hire : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class Hire : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — the onboarding plan this hire is enrolled against.</summary>
         public virtual Guid OnboardingPlanId { get; set; }
 

@@ -1,4 +1,3 @@
-using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Shesha.Domain.Attributes;
@@ -13,11 +12,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.OnboardingPlans
     /// records via ApplyAcceptedProposals. Rejected proposals are retained for audit history.
     /// </summary>
     [Entity(TypeShortAlias = "JourneyPoint.ExtractedTask")]
-    public class ExtractedTask : FullAuditedEntity<Guid>, IMustHaveTenant
+    public class ExtractedTask : FullAuditedEntity<Guid>
     {
-        /// <summary>Tenant ownership.</summary>
-        public virtual int TenantId { get; set; }
-
         /// <summary>FK — source document this task was extracted from.</summary>
         public virtual Guid OnboardingDocumentId { get; set; }
 

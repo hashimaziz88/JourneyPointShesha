@@ -61,7 +61,7 @@ namespace Hashim.JourneyPoint.Domain.Domain.Wellness
 
             foreach (var (period, scheduledDate) in schedule)
             {
-                var checkIn = BuildCheckIn(hireId, journeyId, period, scheduledDate, hire.TenantId);
+                var checkIn = BuildCheckIn(hireId, journeyId, period, scheduledDate);
                 await _checkInRepository.InsertAsync(checkIn);
             }
         }
@@ -90,8 +90,7 @@ namespace Hashim.JourneyPoint.Domain.Domain.Wellness
             Guid hireId,
             Guid journeyId,
             WellnessCheckInPeriod period,
-            DateTime scheduledDate,
-            int tenantId)
+            DateTime scheduledDate)
         {
             return new WellnessCheckIn
             {
@@ -99,8 +98,7 @@ namespace Hashim.JourneyPoint.Domain.Domain.Wellness
                 JourneyId     = journeyId,
                 Period        = period,
                 ScheduledDate = scheduledDate,
-                Status        = WellnessCheckInStatus.Pending,
-                TenantId      = tenantId
+                Status        = WellnessCheckInStatus.Pending
             };
         }
 

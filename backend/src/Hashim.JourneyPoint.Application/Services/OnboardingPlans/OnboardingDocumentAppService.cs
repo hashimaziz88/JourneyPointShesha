@@ -16,6 +16,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
     /// Manages OnboardingDocuments uploaded to a plan for AI task extraction.
     /// Document creation and accepted proposal application delegate to OnboardingDocumentManager.
     /// </summary>
+    [Route("api/services/app/OnboardingDocument/[action]")]
     public class OnboardingDocumentAppService : SheshaAppServiceBase
     {
         private readonly IRepository<OnboardingDocument, Guid> _documentRepository;
@@ -33,7 +34,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
         }
 
         /// <summary>Returns all documents uploaded against a specific OnboardingPlan.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<List<DynamicDto<OnboardingDocument, Guid>>> GetPlanDocuments(Guid planId)
         {
             var docs = await _documentRepository.GetAllListAsync(d => d.OnboardingPlanId == planId);
@@ -44,7 +45,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
         }
 
         /// <summary>Returns full detail of a document including its extracted task proposals.</summary>
-        [HttpGet, Route("[action]")]
+        [HttpGet]
         public async Task<DynamicDto<OnboardingDocument, Guid>> GetDetail(Guid id)
         {
             var doc = await _documentRepository.GetAsync(id);
@@ -55,7 +56,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
         /// Creates an OnboardingDocument record for a file already stored by the caller.
         /// After creation, call StartExtraction to trigger AI task extraction.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<OnboardingDocument, Guid>> Upload(
             Guid planId,
             string fileName,
@@ -68,7 +69,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
         }
 
         /// <summary>Triggers asynchronous AI extraction of tasks from the document via GroqExtractionService.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task StartExtraction(Guid documentId)
         {
             var doc = await _documentRepository.GetAsync(documentId);
@@ -83,7 +84,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
         }
 
         /// <summary>Updates an AI-extracted task proposal before the Facilitator accepts or rejects it.</summary>
-        [HttpPut, Route("[action]")]
+        [HttpPut]
         public async Task<DynamicDto<ExtractedTask, Guid>> UpdateProposal(UpdateProposalDto input)
         {
             var task = await _extractedTaskRepository.GetAsync(input.ExtractedTaskId);
@@ -100,7 +101,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
         }
 
         /// <summary>Marks an extracted task proposal as Accepted for inclusion in the plan.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<ExtractedTask, Guid>> AcceptProposal(Guid extractedTaskId)
         {
             var task = await _extractedTaskRepository.GetAsync(extractedTaskId);
@@ -112,7 +113,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
         }
 
         /// <summary>Marks an extracted task proposal as Rejected so it will not be added to the plan.</summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task<DynamicDto<ExtractedTask, Guid>> RejectProposal(Guid extractedTaskId)
         {
             var task = await _extractedTaskRepository.GetAsync(extractedTaskId);
@@ -127,7 +128,7 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
         /// Converts all Accepted proposals from a document into OnboardingTask records
         /// appended to the plan's last module.
         /// </summary>
-        [HttpPost, Route("[action]")]
+        [HttpPost]
         public async Task ApplyAcceptedProposals(Guid documentId)
         {
             await _documentManager.ApplyAcceptedProposalsAsync(documentId);
