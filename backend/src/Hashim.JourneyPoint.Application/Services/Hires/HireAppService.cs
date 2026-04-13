@@ -10,10 +10,10 @@ using Hashim.JourneyPoint.Domain.Domain.Wellness;
 using Microsoft.AspNetCore.Mvc;
 using Shesha;
 using Shesha.Authorization.Users;
+using Shesha.Domain;
 using Shesha.DynamicEntities.Dtos;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hashim.JourneyPoint.Common.Services.Hires
@@ -34,6 +34,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
 
         private readonly IRepository<Hire, Guid>          _hireRepository;
         private readonly IRepository<OnboardingPlan, Guid> _planRepository;
+        private readonly IRepository<Person, Guid>         _personRepository;
         private readonly HireJourneyManager               _journeyManager;
         private readonly WellnessManager                  _wellnessManager;
         private readonly GroqWellnessService              _groqWellness;
@@ -44,17 +45,19 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         public HireAppService(
             IRepository<Hire, Guid>          hireRepository,
             IRepository<OnboardingPlan, Guid> planRepository,
+            IRepository<Person, Guid>         personRepository,
             HireJourneyManager               journeyManager,
             WellnessManager                  wellnessManager,
             GroqWellnessService              groqWellness,
             UserManager                      userManager)
         {
-            _hireRepository  = hireRepository;
-            _planRepository  = planRepository;
-            _journeyManager  = journeyManager;
-            _wellnessManager = wellnessManager;
-            _groqWellness    = groqWellness;
-            _userManager     = userManager;
+            _hireRepository   = hireRepository;
+            _planRepository   = planRepository;
+            _personRepository = personRepository;
+            _journeyManager   = journeyManager;
+            _wellnessManager  = wellnessManager;
+            _groqWellness     = groqWellness;
+            _userManager      = userManager;
         }
 
         /// <summary>Returns all hires.</summary>
@@ -78,22 +81,22 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
 
         /// <summary>
         /// Creates a hire and, in one atomic sequence:
-        /// 1. Provisions an ABP user account for the hire and assigns the Enrolee role.
+        /// 1. Provisions an ABP user account with the Enrolee role.
         /// 2. Copies the OnboardingPlan's tasks into a Journey.
         /// 3. Activates the Journey (hire moves to Active immediately).
-        /// 4. Schedules all 9 wellness check-ins.
-        /// 5. Generates AI-authored check-in questions via Groq.
+        /// 4. Schedules all 9 wellness check-ins with default questions.
+        /// 5. Attempts AI question personalisation via Groq (non-blocking).
+        /// Returns the hire record and the one-time temporary password.
         /// </summary>
         [HttpPost]
-        public async Task<DynamicDto<Hire, Guid>> Create(CreateHireDto input)
+        public async Task<HireCreatedDto> Create(CreateHireDto input)
         {
             var planId = input.OnboardingPlan?.Id ?? Guid.Empty;
             var plan = await _planRepository.GetAsync(planId);
             if (plan == null)
                 throw new UserFriendlyException($"Onboarding plan '{planId}' not found.");
 
-            // Provision ABP user account with Enrolee role
-            var platformUser = await ProvisionEnroleeAccountAsync(input.FullName, input.EmailAddress);
+            var (platformUser, tempPassword) = await ProvisionEnroleeAccountAsync(input.FullName, input.EmailAddress);
 
             var hire = await _hireRepository.InsertAsync(new Hire
             {
@@ -110,19 +113,18 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
                 WelcomeNotificationStatus = WelcomeNotificationStatus.Pending
             });
 
-            // Generate journey (copies plan tasks) then activate immediately
             var journey = await _journeyManager.CreateDraftJourneyAsync(hire.Id);
             var active  = await _journeyManager.ActivateJourneyAsync(journey.Id);
 
-            // Schedule wellness check-ins across 9 milestone periods
             await _wellnessManager.GenerateCheckInsForJourneyAsync(hire.Id, active.Id);
-
-            // Generate AI questions for each check-in (non-blocking — errors are logged, not thrown)
             await _groqWellness.GenerateQuestionsForJourneyAsync(hire.Id, active.Id);
 
-            // Reload to return the hire with its updated Active status
             var updated = await _hireRepository.GetAsync(hire.Id);
-            return await MapToDynamicDtoAsync<Hire, Guid>(updated);
+            return new HireCreatedDto
+            {
+                Hire         = await MapToDynamicDtoAsync<Hire, Guid>(updated),
+                TempPassword = tempPassword
+            };
         }
 
         /// <summary>Resends the welcome onboarding notification email.</summary>
@@ -146,7 +148,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         /// Username = email address. A temporary password is generated; the hire
         /// should reset it on first login via the forgot-password flow.
         /// </summary>
-        private async Task<User> ProvisionEnroleeAccountAsync(string fullName, string email)
+        private async Task<(User User, string TempPassword)> ProvisionEnroleeAccountAsync(string fullName, string email)
         {
             var nameParts = fullName.Trim().Split(' ', 2);
             var firstName = nameParts[0];
@@ -165,16 +167,21 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
                 supportedPasswordResetMethods: null);
 
             await _userManager.AddToRoleAsync(user, JourneyPointRoles.Enrolee);
-            return user;
+
+            // Shesha's SessionAppService requires a Core_Persons row linked to every user.
+            // CreateUserAsync only creates AbpUsers — we must insert the Person record ourselves.
+            await _personRepository.InsertAsync(new Person
+            {
+                User          = user,
+                FirstName     = firstName,
+                LastName      = lastName,
+                EmailAddress1 = email
+            });
+
+            return (user, tempPass);
         }
 
-        private static string GenerateTempPassword()
-        {
-            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-            var rng    = new Random();
-            var suffix = new string(Enumerable.Range(0, 8).Select(_ => chars[rng.Next(chars.Length)]).ToArray());
-            return $"Hire@{suffix}";
-        }
+        private static string GenerateTempPassword() => "123qwe";
 
         #endregion
     }
