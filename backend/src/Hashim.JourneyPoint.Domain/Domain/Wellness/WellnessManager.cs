@@ -12,7 +12,9 @@ namespace Hashim.JourneyPoint.Domain.Domain.Wellness
     /// <summary>
     /// Manages the creation and scheduling of WellnessCheckIn records for a hire's journey.
     /// Check-ins are generated at journey activation across 9 milestone periods
-    /// (Day1 through Month6). Submission validation enforces that all questions are answered.
+    /// (Day1 through Month6). Each check-in is seeded with 5 default questions immediately;
+    /// GroqWellnessService may later replace these with personalised content.
+    /// Submission validation enforces that all questions are answered.
     /// </summary>
     public class WellnessManager : DomainService
     {
@@ -32,24 +34,28 @@ namespace Hashim.JourneyPoint.Domain.Domain.Wellness
 
         #region Dependencies
 
-        private readonly IRepository<WellnessCheckIn, Guid> _checkInRepository;
-        private readonly IRepository<Hire, Guid> _hireRepository;
+        private readonly IRepository<WellnessCheckIn,  Guid> _checkInRepository;
+        private readonly IRepository<WellnessQuestion, Guid> _questionRepository;
+        private readonly IRepository<Hire,             Guid> _hireRepository;
 
         #endregion
 
         public WellnessManager(
-            IRepository<WellnessCheckIn, Guid> checkInRepository,
-            IRepository<Hire, Guid> hireRepository)
+            IRepository<WellnessCheckIn,  Guid> checkInRepository,
+            IRepository<WellnessQuestion, Guid> questionRepository,
+            IRepository<Hire,             Guid> hireRepository)
         {
-            _checkInRepository = checkInRepository;
-            _hireRepository = hireRepository;
+            _checkInRepository  = checkInRepository;
+            _questionRepository = questionRepository;
+            _hireRepository     = hireRepository;
         }
 
         #region Public Methods
 
         /// <summary>
-        /// Generates all 9 milestone WellnessCheckIn records for a journey.
-        /// Each check-in is scheduled relative to the hire's StartDate.
+        /// Generates all 9 milestone WellnessCheckIn records for a journey,
+        /// each seeded with 5 default questions. Questions are always created here
+        /// so the hire always has something to answer even if AI personalisation fails.
         /// Called automatically when a journey is activated.
         /// </summary>
         public async Task GenerateCheckInsForJourneyAsync(Guid hireId, Guid journeyId)
@@ -62,7 +68,9 @@ namespace Hashim.JourneyPoint.Domain.Domain.Wellness
             foreach (var (period, scheduledDate) in schedule)
             {
                 var checkIn = BuildCheckIn(hireId, journeyId, period, scheduledDate);
-                await _checkInRepository.InsertAsync(checkIn);
+                var saved   = await _checkInRepository.InsertAsync(checkIn);
+
+                await SeedDefaultQuestionsAsync(saved.Id, period);
             }
         }
 
@@ -101,6 +109,105 @@ namespace Hashim.JourneyPoint.Domain.Domain.Wellness
                 Status        = WellnessCheckInStatus.Pending
             };
         }
+
+        private async Task SeedDefaultQuestionsAsync(Guid checkInId, WellnessCheckInPeriod period)
+        {
+            var questions = GetDefaultQuestions(period);
+            for (int i = 0; i < questions.Count; i++)
+            {
+                await _questionRepository.InsertAsync(new WellnessQuestion
+                {
+                    WellnessCheckInId = checkInId,
+                    OrderIndex        = i + 1,
+                    QuestionText      = questions[i],
+                    IsAnswered        = false
+                });
+            }
+        }
+
+        private static List<string> GetDefaultQuestions(WellnessCheckInPeriod period) => period switch
+        {
+            WellnessCheckInPeriod.Day1 => new List<string>
+            {
+                "How are you feeling on your very first day?",
+                "What has surprised you most so far?",
+                "Do you feel welcomed by your team?",
+                "Do you have everything you need to get started?",
+                "What are you most looking forward to in this role?"
+            },
+            WellnessCheckInPeriod.Day2 => new List<string>
+            {
+                "How does your second day compare to your first impressions?",
+                "Are you getting comfortable with your workspace and tools?",
+                "Have you had a chance to connect with your key colleagues?",
+                "Is there anything that has felt unclear or confusing?",
+                "How does the team culture feel so far?"
+            },
+            WellnessCheckInPeriod.Week1 => new List<string>
+            {
+                "How has your first week been overall?",
+                "Do you feel clear on what is expected of you in your role?",
+                "Have you encountered any challenges you would like support with?",
+                "How well are you settling into the team dynamic?",
+                "What has been a highlight from your first week?"
+            },
+            WellnessCheckInPeriod.Month1 => new List<string>
+            {
+                "How are you feeling after your first full month?",
+                "Do you have a clear understanding of your role responsibilities?",
+                "How supported do you feel by your manager and colleagues?",
+                "What is going well for you so far?",
+                "Is there anything we can do to improve your onboarding experience?"
+            },
+            WellnessCheckInPeriod.Month2 => new List<string>
+            {
+                "How is your confidence growing in your role?",
+                "Are there any skills or knowledge gaps you would like to address?",
+                "How is your relationship with your team developing?",
+                "What has been your biggest achievement this month?",
+                "Is there anything making your work more difficult than expected?"
+            },
+            WellnessCheckInPeriod.Month3 => new List<string>
+            {
+                "Reflecting on your first three months, how do you feel you have settled in?",
+                "Do you feel a sense of belonging within the organisation?",
+                "How aligned do you feel with the team's goals and priorities?",
+                "What feedback have you received that has been most valuable?",
+                "What would you like to focus on in the coming months?"
+            },
+            WellnessCheckInPeriod.Month4 => new List<string>
+            {
+                "How independently are you able to perform your core responsibilities?",
+                "What new skills or knowledge have you developed?",
+                "How comfortable are you raising concerns or ideas with your manager?",
+                "What aspects of the job energise you the most?",
+                "Is there any additional support or development you would benefit from?"
+            },
+            WellnessCheckInPeriod.Month5 => new List<string>
+            {
+                "How would you describe your overall experience so far?",
+                "What momentum are you building in your role?",
+                "How well do you collaborate with cross-functional teams?",
+                "What impact do you feel you are making?",
+                "Are there areas where you feel you still need more guidance?"
+            },
+            WellnessCheckInPeriod.Month6 => new List<string>
+            {
+                "As you reach the six-month milestone, how settled do you feel?",
+                "Looking back, what have been your proudest achievements during onboarding?",
+                "What aspects of the organisation's culture resonate most with you?",
+                "What are your goals for the next six months?",
+                "What would you change about your onboarding experience if you could?"
+            },
+            _ => new List<string>
+            {
+                "How are you feeling at this stage of your onboarding?",
+                "What is going well for you?",
+                "Are there any challenges you would like support with?",
+                "What has been your biggest learning this period?",
+                "Is there anything you would like your facilitator to know?"
+            }
+        };
 
         #endregion
     }

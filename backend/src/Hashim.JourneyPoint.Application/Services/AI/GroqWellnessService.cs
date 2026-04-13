@@ -175,15 +175,28 @@ namespace Hashim.JourneyPoint.Common.Services.AI
                 if (!checkInByPeriod.TryGetValue(period.Period ?? "", out var checkIn)) continue;
                 if (period.Questions == null) continue;
 
+                // Replace the default questions seeded by WellnessManager with AI-personalised ones.
+                var existing = await _questionRepository.GetAllListAsync(q => q.WellnessCheckInId == checkIn.Id);
+                var byIndex  = existing.ToDictionary(q => q.OrderIndex);
+
                 for (int i = 0; i < period.Questions.Count; i++)
                 {
-                    await _questionRepository.InsertAsync(new WellnessQuestion
+                    var orderIndex = i + 1;
+                    if (byIndex.TryGetValue(orderIndex, out var existing_q))
                     {
-                        WellnessCheckInId = checkIn.Id,
-                        OrderIndex        = i + 1,
-                        QuestionText      = period.Questions[i],
-                        IsAnswered        = false
-                    });
+                        existing_q.QuestionText = period.Questions[i];
+                        await _questionRepository.UpdateAsync(existing_q);
+                    }
+                    else
+                    {
+                        await _questionRepository.InsertAsync(new WellnessQuestion
+                        {
+                            WellnessCheckInId = checkIn.Id,
+                            OrderIndex        = orderIndex,
+                            QuestionText      = period.Questions[i],
+                            IsAnswered        = false
+                        });
+                    }
                 }
             }
         }
