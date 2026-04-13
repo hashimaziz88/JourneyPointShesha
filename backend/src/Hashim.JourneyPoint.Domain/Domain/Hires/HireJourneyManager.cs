@@ -60,9 +60,6 @@ namespace Hashim.JourneyPoint.Domain.Domain.Hires
             var plan = await _planRepository.GetAsync(hire.OnboardingPlanId);
             Guard.Against.Null(plan, nameof(plan));
 
-            if (plan.Status != OnboardingPlanStatus.Published)
-                throw new UserFriendlyException("Only Published plans can be used to generate journeys.");
-
             if (await HasExistingJourneyAsync(hireId))
                 throw new UserFriendlyException("A journey already exists for this hire.");
 

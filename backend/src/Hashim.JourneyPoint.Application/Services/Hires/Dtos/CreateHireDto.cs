@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Hashim.JourneyPoint.Common.Services.Hires.Dtos
 {
-    /// <summary>Request model for creating a new hire and auto-generating their onboarding journey.</summary>
+    /// <summary>Request model for creating a new hire. Field names match Shesha's wire format.</summary>
     public class CreateHireDto
     {
         /// <summary>Full legal name of the hire.</summary>
@@ -12,7 +12,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires.Dtos
 
         /// <summary>Work email address — used to create the hire's user account.</summary>
         [Required, EmailAddress]
-        public string Email { get; set; }
+        public string EmailAddress { get; set; }
 
         /// <summary>The hire's job title within the organisation.</summary>
         [Required]
@@ -20,17 +20,23 @@ namespace Hashim.JourneyPoint.Common.Services.Hires.Dtos
 
         /// <summary>Department or directorate the hire is joining.</summary>
         [Required]
-        public string DepartmentName { get; set; }
+        public string Department { get; set; }
 
         /// <summary>Official first day of employment.</summary>
         [Required]
         public DateTime StartDate { get; set; }
 
-        /// <summary>The published OnboardingPlan to enrol this hire in.</summary>
+        /// <summary>The OnboardingPlan to enrol this hire in (Shesha sends as nested object).</summary>
         [Required]
-        public Guid OnboardingPlanId { get; set; }
+        public EntityRefDto OnboardingPlan { get; set; }
 
         /// <summary>Optional ABP UserId of the hire's line manager.</summary>
         public long? ManagerUserId { get; set; }
+    }
+
+    /// <summary>Minimal entity reference as sent by Shesha's form engine.</summary>
+    public class EntityRefDto
+    {
+        public Guid Id { get; set; }
     }
 }
