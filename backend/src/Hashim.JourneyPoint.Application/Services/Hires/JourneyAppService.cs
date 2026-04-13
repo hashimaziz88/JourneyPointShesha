@@ -1,3 +1,4 @@
+using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
 using Abp.UI;
 using Hashim.JourneyPoint.Common.Services.Hires.Dtos;
@@ -77,6 +78,57 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
                 throw new UserFriendlyException("No active journey found for the current user.");
 
             return await MapToDynamicDtoAsync<Journey, Guid>(journey);
+        }
+
+        /// <summary>
+        /// Returns all JourneyTasks for the hire linked to the specified ABP platform user ID.
+        /// Used to populate a Shesha DataTable filtered by a specific user.
+        /// </summary>
+        [HttpGet]
+        public async Task<PagedResultDto<DynamicDto<JourneyTask, Guid>>> GetTasksByUserId(long userId)
+        {
+            var hire = await _hireRepository.FirstOrDefaultAsync(h => h.PlatformUserId == userId);
+            if (hire == null)
+                throw new UserFriendlyException($"No hire record found for user '{userId}'.");
+
+            var journey = await _journeyRepository.FirstOrDefaultAsync(j =>
+                j.HireId == hire.Id && j.Status == JourneyStatus.Active);
+
+            if (journey == null)
+                throw new UserFriendlyException($"No active journey found for user '{userId}'.");
+
+            var tasks = await _taskRepository.GetAllListAsync(t => t.JourneyId == journey.Id);
+
+            var items = new List<DynamicDto<JourneyTask, Guid>>();
+            foreach (var task in tasks)
+                items.Add(await MapToDynamicDtoAsync<JourneyTask, Guid>(task));
+
+            return new PagedResultDto<DynamicDto<JourneyTask, Guid>>(items.Count, items);
+        }
+
+        /// <summary>Returns all Enrolee-assigned JourneyTasks for the currently logged-in hire's active journey.</summary>
+        [HttpGet]
+        public async Task<PagedResultDto<DynamicDto<JourneyTask, Guid>>> GetMyTasks()
+        {
+            var hire = await _hireRepository.FirstOrDefaultAsync(h => h.PlatformUserId == AbpSession.UserId);
+            if (hire == null)
+                throw new UserFriendlyException("No hire record found for the current user.");
+
+            var journey = await _journeyRepository.FirstOrDefaultAsync(j =>
+                j.HireId == hire.Id && j.Status == JourneyStatus.Active);
+
+            if (journey == null)
+                throw new UserFriendlyException("No active journey found for the current user.");
+
+            var tasks = await _taskRepository.GetAllListAsync(t =>
+                t.JourneyId == journey.Id
+                && t.AssignmentTarget == OnboardingTaskAssignmentTarget.Enrolee);
+
+            var items = new List<DynamicDto<JourneyTask, Guid>>();
+            foreach (var task in tasks)
+                items.Add(await MapToDynamicDtoAsync<JourneyTask, Guid>(task));
+
+            return new PagedResultDto<DynamicDto<JourneyTask, Guid>>(items.Count, items);
         }
 
         /// <summary>Returns all JourneyTasks assigned to the currently logged-in manager.</summary>
