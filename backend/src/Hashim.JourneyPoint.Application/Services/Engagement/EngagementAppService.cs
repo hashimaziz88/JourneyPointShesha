@@ -1,3 +1,4 @@
+using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
 using Abp.UI;
 using Hashim.JourneyPoint.Common.Services.Engagement.Dtos;
@@ -158,6 +159,26 @@ namespace Hashim.JourneyPoint.Common.Services.Engagement
 
             var updated = await _flagRepository.UpdateAsync(flag);
             return await MapToDynamicDtoAsync<AtRiskFlag, Guid>(updated);
+        }
+
+        /// <summary>
+        /// Returns the last 10 engagement snapshots for a hire ordered chronologically.
+        /// Used as the URL data source for the engagement score line chart.
+        /// </summary>
+        [HttpGet]
+        public async Task<PagedResultDto<DynamicDto<EngagementSnapshot, Guid>>> GetScoreHistory(Guid hireId)
+        {
+            var snapshots = await _snapshotRepository.GetAllListAsync(s => s.HireId == hireId);
+            var page = snapshots
+                .OrderBy(s => s.ComputedAt)
+                .TakeLast(10)
+                .ToList();
+
+            var items = new List<DynamicDto<EngagementSnapshot, Guid>>();
+            foreach (var snapshot in page)
+                items.Add(await MapToDynamicDtoAsync<EngagementSnapshot, Guid>(snapshot));
+
+            return new PagedResultDto<DynamicDto<EngagementSnapshot, Guid>>(snapshots.Count, items);
         }
 
         #region Private Methods

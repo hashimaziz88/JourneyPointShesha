@@ -1,0 +1,4102 @@
+[$speckit-plan](C:\\Users\\Hashim\\Documents\\Git Repos\\JourneyPoint\\.agents\\skills\\speckit-plan\\SKILL.md) 
+# Updated C Sharp Coding Standards
+
+> **NOTE:** This page is still very much a work in progress.
+
+## Basic Standards
+
+NO FILES Above 350 lines
+Good clean code should read like a novel. It's recognizable at a glance; well-organized and elegant. As you go through it, you understand its intent without excessive head-scratching or navigating through convoluted logic.
+You should aspire to write such code at all times.
+The following practices are also prerequisites to progress to intermediate level.
+
+1. **Enough comments** to encourage reuse. Classes and methods which are not easily understood are not reused. Therefore:
+   1. All classes must have a comment describing their purpose, unless it would be self-evident even to a Junior Dev new to the project.
+   1. All public methods must have a comment describing their purpose.
+   1. Any section of code performing non-obvious logic or making non-obvious assumptions should be preceded with a comment describing the logic implemented or assumptions made.
+1. **Keep classes short** - As a rule of thumb, any class longer than 350 lines is likely to be too long and trying to do too many things violating the [Single Responsibility Principle](https://malshikay.medium.com/single-responsibility-principle-in-c-62c00a87988a).
+1. **Keep methods short and easy to understand** - As a rule of thumb, any method that requires you to scroll vertically on your code editor to view the full method definition is getting too long (though in some cases it can be unavoidable). Most of the time, however, extracting out sections into explicitly named sub methods, will enhance readability significantly.
+1. **Order Class Members Logically** - Arrange the members of your class in a logical order to minimize the reader's need to jump around to understand the flow. For instance, group related properties together, placing the most significant ones at the top. If methods are intended to be called in a certain order, their arrangement in the class should mirror this sequence. Sub-methods that are exclusively called by a parent method should be positioned immediately after the parent method, following the logical sequence.
+1. **Use #region on long classes** - Using `#region` can help organize your code especially in longer classes. For example, to group the sub methods called by a parent method together.
+1. **Use Guard Clauses** - Use Guard clauses to Test for all the necessary preconditions for a complex method to execute up-front is a great way to clean up your code. It not only clearly communicates the preconditions and expectations are for anyone calling your method, but also simplifies the code in the body of the method as it removes the need to perform checks further down. [See](https://www.youtube.com/watch?v=UUehR_VNyro)
+   - Use [Ardalis.GaurdClauses](https://github.com/ardalis/GuardClauses) as a standard library
+1. **Excessive nesting** - Excessive nesting through nested conditional (`if`, `switch`) and looping (`while`, `foreach`) statements Can make the code difficult to read. If you are nesting three layers deep or more you should probably consider refactoring. Extracting out a nested section into a separate method can usually help, as well as applying the early return principle.
+1. **Proper variable and method naming** - Ensure you use clear variable and method names (without spelling mistakes!) and be consistent in your naming conventions. Sometimes it can take time to find just the right name that clearly conveys the correct meaning and intent, but it pays dividends in the long term through improved clarity and maintainability. Don't rush this!
+1. **Replace 'Magic numbers' with constants or enums** - [See example](https://refactoring.guru/replace-magic-number-with-symbolic-constant).
+1. **DRY - Don't Repeat Yourself** - 'Copy and paste coding' is lazy and rude, and creates bloat that is difficult to maintain in the long term. If your code looks similar to another section, extract out the common logic into a reusable method.
+1. **Simple and Direct** - Adhering to the KISS (Keep It Simple Stupid) principle, well-written code should be as uncomplicated as possible, facilitating easy understanding and debugging. Generally, the fewer lines of code required to accomplish a task, the better. However, there are exceptions, such as when a single conditional statement or Linq statements attempts to incorporate too many conditions, making it convoluted. In such cases, it's preferable to expand the code to make it easier to understand.
+1. **Format your code** - Visual Studio tends to format your code automatically, but poorly formatted code still makes its way into the repos which betrays a lack of attention to detail. Use these shortcuts to do it effortlessly.
+   - `Ctrl+E, Ctrl+D` to format the entire document.
+   - `Ctrl+E, Ctrl+F` to format the selection.
+1. **Remove dead code** - It is sometimes scary deleting sections of code especially if you did not write it but any code which is no longer utilized still adds clutter and confusion which hinders maintainability. If it is no longer used delete it!
+
+### Useful resources:
+
+- [5 Awesome C# Refactoring Tips](https://www.milanjovanovic.tech/blog/5-awesome-csharp-refactoring-tips)
+- (10 Coding Principles Explained in 5 Minutes)[https://www.youtube.com/watch?v=GmXPwRNIrAU]
+- [The Art of Code Refactoring in C#](https://medium.com/@kerimkkara/the-art-of-code-refactoring-in-c-d02f0346a1dd)
+- [Refactoring Course](https://refactoring.guru/refactoring/course) - We'll sponsor the cost of the course for anyone who wants to complete this!
+- [Clean Code presentation from Uncle Bob](https://www.youtube.com/watch?v=7EmboKQH8lM&list=PLmmYSbUCWJ4x1GO839azG_BBw8rkh-zOj) - A bit long but easy to watch and full of wisdom
+
+## Efficient
+
+Good code should be efficient and free from obvious performance issues. The most common performance issues usually include:
+
+- Using loops that cause excessive database calls instead of consolidating them into a single SQL query when possible. For example:
+  - Looping through, causing multiple SELECT statements to the database where a 'flattened entity' joining the appropriate tables would reduce this to a single SELECT call.
+  - Looping through to make multiple updates instead of a single bulk update statement.
+- Not performing database indexing for queries expected to be made often by the application.
+
+## Solution Structure
+
+- Always follow the solution templates which follows the Clean Architecture structure
+- Always place classes the right
+
+### Common Mistakes
+
+- Domain logic in the AppService
+- Placing DTO classes in the domain layer:
+  - Because DTO classes often look very much like entity classes, less experienced developers are often tempted to place DTOs in the domain project. This should not be the case as a matter of course. DTOs should be placed under a `Dtos` folder next to the AppService which uses. There can be some exceptions when a Dto is used as a parameter to a domain service, in which case it is acceptable to have the Dto place in the same folder as the DomainService.
+  - When creating a Dto that serves a single function (e.g create or update or response only), the naming convention should take on the following format `{end-pointname}Request` e.g `CreateFieldServiceProfileRequest`.
+
+---
+
+# HRIS Backend AN EXAMPLE OF HOW A ABP BACKEND IS MADE AT BOXFUSION - Architecture & Folder Structure Guide
+
+## Overview
+
+The HRIS (Human Resources Information System) backend is a **Domain-Driven Design (DDD)** application built on the **ASP.NET Boilerplate (ABP)** framework targeting **.NET 9**, using **PostgreSQL** as the database. The solution follows a layered, modular monolith architecture with clear separation of concerns.
+
+---
+
+## Solution Structure
+
+```
+aspnet-core/
+├── src/
+│   ├── hrisApi.Core/                  # Domain Layer
+│   ├── hrisApi.Application/           # Application Service Layer
+│   ├── hrisApi.EntityFrameworkCore/   # Data Access / Infrastructure Layer
+│   ├── hrisApi.Web.Core/              # Web Infrastructure Layer
+│   └── hrisApi.Web.Host/              # Presentation / API Host Layer
+├── test/
+│   ├── hrisApi.Tests/                 # Unit & Integration Tests
+│   └── hrisApi.Web.Tests/             # Web / API Tests
+└── hrisApi.sln
+```
+
+The layers have a strict one-way dependency direction:
+
+```
+Web.Host
+  └── Web.Core
+        └── Application
+              ├── Core  (Domain)
+              └── EntityFrameworkCore
+                    └── Core  (Domain)
+```
+
+No layer may reference a layer above it.
+
+---
+
+## Layer Breakdown
+
+---
+
+### 1. `hrisApi.Core` — Domain Layer
+
+**Purpose:** Contains all business entities, domain logic, and domain-specific services. This is the heart of the application and has **no dependency on any other project layer**.
+
+
+Example:
+```
+[Project]Api.Core/
+├── [Project]ApiCoreModule.cs               # ABP module registration for Core
+├── Authorization/
+│   ├── Roles/                         # Role definitions & seeds
+│   └── Users/                         # User manager & login service
+├── Configuration/                     # App configuration helpers
+├── Debugging/                         # Debug-time utilities
+├── Domains/                           # Business domain entities
+│   ├── Attendance Management/
+│   │   ├── AbsenceReport.cs
+│   │   ├── AttendanceRecord.cs
+│   │   ├── Leave.cs
+│   │   ├── LeaveRequest.cs
+│   │   └── Project.cs
+│   ├── Employee Management/
+│   │   ├── Employee.cs
+│   │   ├── EmployeeDocument.cs
+│   │   ├── EmployeeManager.cs         # Domain service for employee logic
+│   │   └── Helpers/TaxCalculator.cs
+│   ├── Payroll Processing/
+│   │   ├── BonusOrCommission.cs
+│   │   ├── PayrollProfile.cs
+│   │   ├── PayrollTransaction.cs
+│   │   └── Reimbursement.cs
+│   ├── Recruitment Module/
+│   │   ├── Applicant.cs
+│   │   ├── Interview.cs
+│   │   ├── JobApplication.cs
+│   │   ├── JobPosting.cs
+│   │   └── OfferLetter.cs
+│   └── HRReport.cs
+├── Editions/                          # SaaS edition definitions
+├── Features/                          # SaaS feature management
+├── Identity/                          # Identity customizations
+├── Localization/
+│   └── SourceFiles/                   # XML localization resource files
+├── MultiTenancy/                      # Tenant entity & manager
+├── Timing/                            # Clock & timezone helpers
+├── Validation/                        # Custom validation attributes
+└── Web/                               # Web-specific domain helpers
+```
+
+#### Rules for the Domain Layer
+
+- All entities **must** extend `FullAuditedEntity<Guid>` to get `CreationTime`, `CreatorUserId`, `LastModificationTime`, `LastModifierUserId`, `IsDeleted`, and `DeletionTime` automatically.
+- Entities use **data annotations** for property-level validation (`[Required]`, `[MaxLength]`, `[Phone]`, etc.).
+- Domain services (e.g., `EmployeeManager`) encapsulate logic that does not belong to a single entity.
+- **No** EF Core, HTTP, or application-layer references are allowed here.
+
+#### Example — Entity
+
+```csharp
+// Domains/Employee Management/Employee.cs
+public class Employee : FullAuditedEntity<Guid>
+{
+    public string EmployeeNumber { get; set; }
+
+    public long UserId { get; set; }
+
+    [ForeignKey("UserId")]
+    public User User { get; set; }
+
+    [Required]
+    [Phone]
+    public string ContactNo { get; set; }
+}
+```
+
+---
+
+### 2. `[Project]Api.Application` — Application Service Layer
+
+**Purpose:** Orchestrates domain entities to fulfil use cases. Exposes **application services** consumed by the Web layer. Contains **DTOs** and **AutoMapper** profiles.
+
+Example for Structue and files
+```
+[Project]Api.Application/
+├── hrisApiApplicationModule.cs        # ABP module registration; configures AutoMapper
+├── Authorization/
+│   └── Accounts/
+│       └── Dto/
+├── Configuration/
+│   ├── Dto/
+│   └── Ui/
+├── MultiTenancy/
+│   └── Dto/
+├── Services/                          # One folder per domain service
+│   ├── AbsenceReportService/
+│   │   ├── IAbsenceReportAppService.cs
+│   │   ├── AbsenceReportAppService.cs
+│   │   └── DTO/
+│   │       └── AbsenceReportDto.cs
+│   ├── AttendaceRecordService/
+│   │   ├── IAttendanceRecordAppService.cs
+│   │   ├── AttendanceRecordAppService.cs
+│   │   └── DTO/
+│   ├── BonusOrCommissionService/
+│   │   └── DTO/
+│   ├── EmailService/
+│   │   └── DTO/
+│   ├── Employee Management/
+│   │   ├── DTO/
+│   │   └── Helpers/
+│   ├── InterviewService/
+│   │   └── DTO/
+│   ├── JobApplicationService/
+│   │   └── DTO/
+│   ├── JobPostingService/
+│   │   └── DTO/
+│   ├── LeaveRequestService/
+│   │   └── DTO/
+│   ├── LeaveService/
+│   │   └── DTO/
+│   ├── PayrollProfileService/
+│   │   └── DTO/
+│   ├── PayrollTransactionService/
+│   │   └── DTO/
+│   ├── ProjectService/
+│   │   └── DTO/
+│   └── ReimbursementService/
+│       └── DTO/
+├── Roles/
+│   └── Dto/
+├── Sessions/
+│   └── Dto/
+└── Users/
+    └── Dto/
+```
+
+#### Naming Conventions
+
+| Artifact          | Convention                       | Example                    |
+| ----------------- | -------------------------------- | -------------------------- |
+| Service interface | `I{Entity}AppService`            | `ILeaveRequestAppService`  |
+| Service class     | `{Entity}AppService`             | `LeaveRequestAppService`   |
+| DTO folder        | `DTO/` inside the service folder | `LeaveRequestService/DTO/` |
+| DTO class         | `{Entity}Dto`                    | `LeaveRequestDto`          |
+
+#### Rules for the Application Layer
+
+- Every service class **must** have a corresponding interface.
+- Services extend `AsyncCrudAppService<TEntity, TDto, TPrimaryKey>` for standard CRUD, or `ApplicationService` for custom logic.
+- Apply `[AbpAuthorize]` on the class or individual methods to enforce authentication/authorisation.
+- DTOs must be decorated with `[AutoMap(typeof(TEntity))]` so AutoMapper can map between the entity and the DTO without manual configuration.
+- DTOs must **not** expose EF navigation properties directly — flatten or nest explicitly.
+
+#### Example — Service
+
+```csharp
+// Services/AbsenceReportService/AbsenceReportAppService.cs
+[AbpAuthorize]
+public class AbsenceReportAppService
+    : AsyncCrudAppService<AbsenceReport, AbsenceReportDto, Guid>,
+      IAbsenceReportAppService
+{
+    public AbsenceReportAppService(IRepository<AbsenceReport, Guid> repository)
+        : base(repository) { }
+}
+```
+
+#### Example — DTO
+
+```csharp
+// Services/AbsenceReportService/DTO/AbsenceReportDto.cs
+[AutoMap(typeof(AbsenceReport))]
+public class AbsenceReportDto : EntityDto<Guid>
+{
+    public Guid EmployeeId { get; set; }
+    public DateTime Date { get; set; }
+    public string AbsenceType { get; set; }
+}
+```
+
+---
+
+### 3. `[Project]Api.EntityFrameworkCore` — Data Access / Infrastructure Layer
+
+**Purpose:** Implements the repository interfaces defined in the domain using **Entity Framework Core** and **PostgreSQL (Npgsql)**.
+
+```
+[Project]Api.EntityFrameworkCore/
+├── [Project]ApiEntityFrameworkModule.cs    # ABP module registration; registers DbContext
+├── EntityFrameworkCore/
+│   ├──[Project]ApiDbContext.cs            # Main DbContext — declares all DbSet<T>
+│   ├── [Project]ApiDbContextConfigurer.cs  # Configures the PostgreSQL provider
+│   ├── [Project]ApiDbContextFactory.cs     # Design-time factory for EF migrations
+│   ├── AbpZeroDbMigrator.cs           # Runs pending migrations on startup
+│   ├── Repositories/
+│   │   └── hrisApiRepositoryBase.cs   # Custom base repository (extension point)
+│   ├── Seed/
+│   │   └── Host/
+│   │       ├── DefaultEditionCreator.cs
+│   │       ├── DefaultLanguagesCreator.cs
+│   │       ├── DefaultSettingsCreator.cs
+│   │       └── HostRoleAndUserCreator.cs
+│   └── Migrations/                    # EF Core auto-generated migration files
+```
+
+#### Rules for the Data Access Layer
+
+- Every domain entity registered in `Domains/` **must** have a corresponding `DbSet<T>` in `hrisApiDbContext`.
+- Override `OnModelCreating` only for configuration that cannot be expressed with data annotations (e.g., UTC datetime conversion, composite keys, table naming).
+- Use `IRepository<TEntity, TPrimaryKey>` injected via constructor — do not use `DbContext` directly in the Application layer.
+- New migrations are generated with `dotnet ef migrations add <MigrationName>` from within this project.
+- Seed data (default roles, settings, languages) lives in `Seed/Host/` and runs once on startup.
+
+#### Example — DbContext Registration
+
+```csharp
+// EntityFrameworkCore/[Project]ApiDbContext.cs
+public class hrisApiDbContext : AbpZeroDbContext<Tenant, Role, User, hrisApiDbContext>
+{
+    public DbSet<Employee> Employees { get; set; }
+    public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
+    public DbSet<PayrollProfile> PayrollProfiles { get; set; }
+    // ... one DbSet per domain entity
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        // e.g. UTC datetime conversion
+    }
+}
+```
+
+---
+
+### 4. `[Project]Api.Web.Core` — Web Infrastructure Layer
+
+**Purpose:** Shared web infrastructure used by both the Host and any test projects. Handles JWT configuration, external authentication providers, and base controller definitions.
+
+```
+[Project]Api.Web.Core/
+├── [Project]ApiWebCoreModule.cs            # ABP module registration for Web.Core
+├── Authentication/
+│   ├── External/                      # External OAuth/social login providers
+│   │   ├── ExternalAuthConfiguration.cs
+│   │   ├── ExternalAuthManager.cs
+│   │   ├── ExternalAuthProviderApiBase.cs
+│   │   ├── IExternalAuthManager.cs
+│   │   ├── IExternalAuthConfiguration.cs
+│   │   └── IExternalAuthProviderApi.cs
+│   └── JwtBearer/
+│       ├── TokenAuthConfiguration.cs  # JWT signing key, issuer, audience, expiry
+│       └── JwtTokenMiddleware.cs      # Middleware to validate tokens per request
+├── Configuration/                     # Web-layer configuration helpers
+├── Controllers/
+│   └── TokenAuthController.cs         # POST /api/TokenAuth/Authenticate
+├── Identity/                          # Identity UI helpers
+└── Models/                            # Auth request/response models
+```
+
+#### Rules for the Web Infrastructure Layer
+
+- All controllers must inherit from `hrisApiControllerBase` (not `Controller` directly).
+- JWT configuration (key, issuer, audience) is read from `appsettings.json` and injected via `TokenAuthConfiguration`.
+- External providers implement `IExternalAuthProviderApi` for a consistent plug-in pattern.
+- Do **not** add business logic here — only plumbing.
+
+#### Example — Auth Endpoint
+
+```csharp
+// Controllers/TokenAuthController.cs
+[Route("api/[controller]/[action]")]
+public class TokenAuthController : hrisApiControllerBase
+{
+    [HttpPost]
+    public async Task<AuthenticateResultModel> Authenticate([FromBody] AuthenticateModel model)
+    {
+        var loginResult = await GetLoginResultAsync(
+            model.UserNameOrEmailAddress, model.Password, GetTenancyNameOrNull());
+
+        var accessToken = CreateAccessToken(CreateJwtClaims(loginResult.Identity));
+
+        return new AuthenticateResultModel
+        {
+            AccessToken = accessToken,
+            ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
+            UserId = loginResult.User.Id
+        };
+    }
+}
+```
+
+---
+
+### 5. `[Project]Api.Web.Host` — Presentation / API Host Layer
+
+**Purpose:** The runnable ASP.NET Core host. Configures the middleware pipeline, dependency injection, Swagger, CORS, and logging. This is the **startup project**.
+
+```
+[Project]Api.Web.Host/
+├── Startup/
+│   ├── Program.cs                     # Entry point; Castle Windsor IoC bootstrapper
+│   ├── Startup.cs                     # ConfigureServices + Configure (middleware)
+│   └── hrisApiWebHostModule.cs        # Top-level ABP module
+├── Controllers/
+│   ├── HomeController.cs              # Redirects "/" to "/swagger"
+│   └── AntiForgeryController.cs       # Issues XSRF tokens
+├── appsettings.json                   # Environment-specific configuration
+├── appsettings.Staging.json
+├── appsettings.Production.config
+├── log4net.config                     # Logging configuration (dev)
+├── log4net.Production.config          # Logging configuration (prod)
+├── Dockerfile                         # Container build definition
+├── wwwroot/
+│   └── swagger/ui/index.html         # Custom Swagger UI shell
+└── Properties/
+    └── launchSettings.json            # VS/CLI launch profiles
+```
+
+#### Configuration — `appsettings.json` Structure
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "<PostgreSQL connection string>"
+  },
+  "App": {
+    "ServerRootAddress": "https://localhost:44311/",
+    "ClientRootAddress": "http://localhost:3000/",
+    "CorsOrigins": "http://localhost:3000,http://localhost:4200"
+  },
+  "Authentication": {
+    "JwtBearer": {
+      "SecurityKey": "<secret key>",
+      "Issuer": "hrisApi",
+      "Audience": "hrisApi"
+    }
+  },
+  "SmtpSettings": {
+    "Server": "smtp.gmail.com",
+    "Port": 587,
+    "EnableSsl": true
+  }
+}
+```
+
+#### Middleware Pipeline Order (`Startup.cs`)
+
+1. CORS
+2. ABP exception handling
+3. Static files
+4. Authentication (JWT)
+5. Authorization
+6. Routing → MVC Controllers
+7. Swagger (`/swagger`)
+8. SignalR (`/signalr`)
+
+#### Rules for the Host Layer
+
+- **No business logic** belongs here. Forward to application services via controllers auto-generated by ABP.
+- Environment-specific config overrides must go in `appsettings.{Environment}.json`, never committed with real secrets.
+- CORS origins are loaded dynamically from `App:CorsOrigins` — update that setting rather than hardcoding origins.
+
+---
+
+### 6. `hrisApi.Migrator` — Database Migration Runner
+
+**Purpose:** A standalone console tool for applying pending EF Core migrations against any environment without running the full web host.
+
+```
+[Project]Api.Migrator/
+├── Program.cs                         # Entry point
+├── [Project]ApiMigratorModule.cs           # ABP module
+└── appsettings.json                   # Connection string for migration target
+```
+
+Run with:
+
+```bash
+dotnet run --project src/[Project]Api.Migrator
+```
+
+---
+
+### 7. Test Projects
+
+```
+test/
+├── [Project]Api.Tests/                     # Unit & integration tests
+│   ├── [Project]ApiTestModule.cs
+│   └── hrisApi.Tests.csproj
+└── [Project]Api.Web.Tests/                 # HTTP-level API tests
+    ├── Startup.cs
+    ├── [Project]ApiWebTestModule.cs
+    └── [Project]Api.Web.Tests.csproj
+```
+
+---
+
+## Adding a New Feature — Step-by-Step
+
+Follow these steps every time a new business entity or feature is introduced:
+
+### Step 1 — Define the Domain Entity (`hrisApi.Core`)
+
+Create `aspnet-core/src/hrisApi.Core/Domains/{Module Name}/{EntityName}.cs`.
+
+```csharp
+public class JobGrade : FullAuditedEntity<Guid>
+{
+    [Required]
+    [MaxLength(50)]
+    public string GradeCode { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string Description { get; set; }
+
+    public decimal MinimumSalary { get; set; }
+    public decimal MaximumSalary { get; set; }
+}
+```
+
+### Step 2 — Register in DbContext (`hrisApi.EntityFrameworkCore`)
+
+Add a `DbSet<T>` to `hrisApiDbContext.cs`:
+
+```csharp
+public DbSet<JobGrade> JobGrades { get; set; }
+```
+
+### Step 3 — Create a Migration
+
+```bash
+cd aspnet-core
+dotnet ef migrations add AddJobGrade --project src/hrisApi.EntityFrameworkCore
+```
+
+### Step 4 — Create the DTO (`hrisApi.Application`)
+
+Create `Services/{Entity}Service/DTO/{Entity}Dto.cs`:
+
+```csharp
+[AutoMap(typeof(JobGrade))]
+public class JobGradeDto : EntityDto<Guid>
+{
+    public string GradeCode { get; set; }
+    public string Description { get; set; }
+    public decimal MinimumSalary { get; set; }
+    public decimal MaximumSalary { get; set; }
+}
+```
+
+### Step 5 — Create the Service Interface
+
+Create `Services/{Entity}Service/I{Entity}AppService.cs`:
+
+```csharp
+public interface IJobGradeAppService
+    : IAsyncCrudAppService<JobGradeDto, Guid>
+{
+}
+```
+
+### Step 6 — Implement the Service
+
+Create `Services/{Entity}Service/{Entity}AppService.cs`:
+
+```csharp
+[AbpAuthorize]
+public class JobGradeAppService
+    : AsyncCrudAppService<JobGrade, JobGradeDto, Guid>,
+      IJobGradeAppService
+{
+    public JobGradeAppService(IRepository<JobGrade, Guid> repository)
+        : base(repository) { }
+}
+```
+
+ABP automatically exposes this as a REST API — no controller needed.
+
+---
+
+## Cross-Cutting Concerns
+
+| Concern                  | How It Is Handled                                                |
+| ------------------------ | ---------------------------------------------------------------- |
+| **Authentication**       | JWT Bearer tokens via `TokenAuthController`                      |
+| **Authorisation**        | `[AbpAuthorize]` attribute; role-based permissions               |
+| **Audit Logging**        | `FullAuditedEntity<Guid>` on every entity                        |
+| **Soft Delete**          | Built into `FullAuditedEntity` via `IsDeleted` flag              |
+| **Validation**           | Data annotations on entities; ABP validates DTOs automatically   |
+| **Logging**              | Log4Net configured in `log4net.config`                           |
+| **Localisation**         | XML resource files in `Core/Localization/SourceFiles/`           |
+| **Multi-Tenancy**        | ABP Zero tenant management; `TenantId` on every entity           |
+| **Exception Handling**   | ABP global exception handler; returns consistent error envelopes |
+| **Dependency Injection** | Castle Windsor (ABP default); registered per ABP module          |
+| **Object Mapping**       | AutoMapper; configured automatically via `[AutoMap]` attribute   |
+
+---
+
+## Technology Stack
+
+| Component      | Technology                               |
+| -------------- | ---------------------------------------- |
+| Framework      | ASP.NET Boilerplate (ABP Zero) on .NET 9 |
+| Database       | PostgreSQL via Npgsql                    |
+| ORM            | Entity Framework Core                    |
+| IoC Container  | Castle Windsor                           |
+| Object Mapping | AutoMapper                               |
+| Authentication | JWT Bearer (HS256)                       |
+| API Docs       | Swagger / OpenAPI                        |
+| Real-Time      | SignalR                                  |
+| Email          | MailKit / SMTP                           |
+| PDF Generation | iTextSharp                               |
+| Logging        | Log4Net                                  |
+| Testing        | xUnit (via ABP test helpers)             |
+
+# Updated NextJs Best Practices
+## Tips for Clean and Efficient Code
+
+### Utilize File-Based Routing
+Next.js employs a file-based routing system, allowing you to create pages simply by adding React components in the “pages” directory. Adhering to this convention not only makes your project structure more organized but also simplifies the management of routes and improves code maintainability.
+
+### Leverage Server-Side Rendering Wisely
+While server-side rendering enhances SEO and initial page load times, it may not be necessary for all pages. Identify pages that require SSR, such as dynamic or content-heavy pages, and use Next.js’s “getServerSideProps” or “getInitialProps” functions selectively for optimal performance.
+
+### Embrace Static Site Generation (SSG)
+Static Site Generation offers better performance and scalability compared to SSR for pages with static content. For pages that do not require real-time data, leverage SSG with “getStaticProps” to generate static HTML files at build time and serve them directly to users, reducing server load.
+
+### Optimize Image Loading
+Images can significantly impact page load times. Use Next.js’s “Image” component, which automatically optimizes images and provides lazy loading, ensuring faster rendering and improved performance.
+
+### Code Splitting and Dynamic Imports
+Take advantage of Next.js’s built-in code splitting feature to divide your application code into smaller, more manageable chunks. Use dynamic imports to load non-essential components only when needed, reducing the initial bundle size and improving overall page load times.
+
+### Minimize Third-Party Dependencies
+Be cautious when adding third-party libraries and packages to your project, as they can increase the bundle size and affect performance. Opt for lightweight alternatives or, where feasible, write custom solutions to reduce dependencies.
+
+### Manage State Effectively
+Select the appropriate state management solution for your project, such as React’s built-in “useState” and “useReducer” hooks or external libraries like Redux or Zustand. Keep the global state minimal, and prefer passing data between components using props whenever possible.
+
+### Opt for TypeScript Integration
+Integrating TypeScript in your Next.js project provides static type-checking, reducing the chances of runtime errors and enhancing code reliability. Embrace TypeScript to improve code maintainability and collaboration within your team.
+
+### Properly Handle Error States
+Handle error states gracefully by implementing custom error pages using Next.js’s “ErrorBoundary” or the “getStaticProps” and “getServerSideProps” functions. Providing users with informative error messages enhances user experience and helps identify and resolve issues quickly.
+
+### Implement Caching Strategies
+Leverage caching techniques, such as HTTP caching and data caching, to reduce server requests and enhance performance. Caching can significantly improve response times for frequently requested resources.
+
+------------------------------------------------------
+# Updated NextJs Code Style
+
+# Code Style Guidelines
+
+### Code should be functional in style rather than Object Orientated or Imperative unless there are no clean alternatives.
+
+* Use pure functions where possible to make them testable and modular.
+* Avoid mutating variables and the let keyword.
+* Prefer functional & immutable array methods .ie map/filter/reduce/some/every over any types of mutable for loop.
+* Prefer `return early` coding style, more about it here.
+* Avoid classes and stateful modules where possible.
+* Don't Repeat Yourself. Make extensive use of the constants and utils files for re-usable strings and methods.
+* Don't obsess over performance of code, obsess over making it clear.
+* The above rules can be relaxed for test scripts.
+
+### React components should be simple and composable and cater to real life UI design problems:
+
+* `Simplicity`: Strive to keep the component API fairly simple and show real-world scenarios of using the component.
+* `Representational`: React components should be templates, free of logic, and purely presentational. It aims to make our components shareable and easy to test.
+* `Composition`: Break down components into smaller parts with minimal props to keep complexity low, and compose them together. This will ensure that the styles and functionality are flexible and extensible.
+* `Accessibility`: When creating a component, keep accessibility top of mind. This includes keyboard navigation, focus management, color contrast, voice over, and the correct aria-* attributes.
+* `Naming Props`: We all know naming is the hardest thing in this industry. Generally, ensure a prop name is indicative of what it does. Boolean props should be named using auxiliary verbs such as does, has, is and should. For example, Button uses `isDisabled`, `isLoading`, etc.
+
+### When doing styling, strive to use `tailwindcss` classes for consistency and painless maintenance.
+
+* Avoid hard coding colors. All colors from the design guideline should be pre-defined in tailwind.js. Please use them with respect.
+* Try to avoid injecting styles via style attribute because it's impossible to build responsiveness with inline styles. Strive to only use Tailwind classes for sizing, spacing, and building grid layouts.
+
+// Don't
+
+	<div style={{marginLeft: '8px'}}></div>
+
+// Do
+
+	<div className="ml-2"></div
+
+// Grid layout
+
+	<div className="grid grid-cols-3 gap-5">
+	  <div className="col-span-2"></div>
+	  <div className="col-span-1"></div>
+	</div>
+### Maintain the separation of concerns in the folder structure laid out in the initial scaffold:
+
+* `constants/` contains shared variables used across the app.
+* `components/` contains shared ui components used across the app.
+* `utils/` contains shared functions used across the app.
+* `hooks/` contains shared hooks used across the app.
+* `types/` contains common TypeScript types or interfaces.
+
+### When adding third party libraries to the project consider carefully the following;
+
+* Is this a trivial package we can easily write in-house? If so, take the time to roll your own.
+* Is this library well supported, under active development and widely used in the community? If not, do not use it.
+* Do we use a similar but different library for the same task elsewhere in the company? If so, use this library for developer familiarity and consistency.
+* Will this library impact significantly performance or bundle size eg Lodash or Moment? If so, consider carefully if it is necessary or if there is a better alternative.
+
+### TypeScript helps write code better but should be used with care to not lose its strengths:
+
+* Avoid using any when possible. Using any is sometimes valid, but should rarely be used, even if to make quicker progress. Even Unknown is better than using any if you aren't sure of an input parameter.
+* Pay attention when using the non-null assertion operator !. Only use if you know that a variable cannot be null right now rather than blindly using it to pass the validation step.
+
+### File naming should be PascalCase for all React components files and kebab-case for the rest.
+
+Exports from files can be either as variable or default exports, but please stick to naming the object before using export default to avoid anonymous module names in stack traces and React dev tools.
+
+Your app should be fast but also remember **Premature optimisation is the root of all evil**. If you think it’s slow, prove it with a benchmark., the profiler of React Developer Tools (Chrome extension) is your friend!
+
+### General suggestions
+
+* Use `useMemo` mostly just for expensive calculations.
+* Use `React.memo`, `useMemo`, and `useCallback` for reducing re-renders, they shouldn't have many dependencies and the dependencies should be mostly primitive types.
+* Make sure your `React.memo`, `useCallback` or `useMemo` is doing what you think it's doing (is it really preventing re-rendering?).
+* Stop punching yourself every time you blink (fix slow renders before fixing re-renders).
+* Putting your state as close as possible to where it's being used will not only make your code so much easier to read but It would also make your app faster (state colocation).
+* Context should be logically separated, do not add to many values in one context provider. If any of the values of your context changes, all components consuming that context also re-renders even if those components don't use the specific value that was actually changed.
+* You can optimize context by separating the `state` and the `dispatch` function.
+* Know the terms `lazy loading` and `bundle/code splitting`
+* A smaller bundle size usually also means a faster app. You can visualize the code bundles you've generated with `@next/bundle-analyzer`.
+
+------------------------------------------------------
+
+# Updated JavaScript Coding Standards
+
+# **Coding Standards JavaScript / TypeScript**
+
+## Quick Reference
+### Classes:
+Class name:
+* Pascal Case
+* Must be documented
+* Add regions for:
+> * Constants
+> * Private variables
+> * Public variables
+> * Constructor
+> * Public methods
+> * Private methods
+
+Constants:
+* ALL UPPER CASE
+* Must be documented
+
+Private Variables:
+* Underscore `_`, followed by Camel Case name
+* Must be preceded with `private` keyword
+
+Public Variables:
+* Camel Case
+* Must be documented
+* Must be preceded with `public` keyword
+
+Public Methods:
+* Camel Case
+* Must be documented
+* Must be preceded with `public` keyword
+
+Private Methods:
+* Camel Case
+* Must be preceded with `private` keyword
+
+Functions & Methods (general):
+* Camel Case
+* Must declare return type
+* All parameters must declare type
+
+---
+
+### Interfaces:
+Interface name:
+* Capital `I` followed by Pascal Case name
+* Must be documented
+
+Variables & Functions:
+* Camel Case
+* Must be documented
+
+---
+
+### General Rules:
+* Use of `any` variable/function type is **not** allowed
+* Variables may only contain alpha-numeric characters as well as an underscore (restricted to private class-scope variables)
+* Comments `//` followed by space and starts with lower case
+* Opening curly brackets must start on the same line
+* No spaces after closing curly bracket or semi colon
+* Indent: 4 spaces (no tabs)
+* Maximum line length: 200 characters
+* No consecutive blank lines
+* No empty blocks of code.  Add `// todo: description` to the block if code will be implemented later
+* Use of `eval` is not allowed
+* Use of object properties through string literals is restricted, eg. `myVar[“propName”]`
+* No Switch-case fall-through
+* No unreachable code allowed
+* No unused expressions/variables/functions allowed
+* Variables & functions must be declared before they are used
+* Single statements following a control block `if/for/while/do` must be enclosed within curly brackets `{ … }`
+* Only double-quotes may be used for strings
+* All comparison operators must use triple comparison: `===`, `!==`
+* All modules must begin with `use strict`
+* **Do not** use abbreviations on any variable/method name
+* File names should be the same as the class/function name that is implemented inside it
+
+--- 
+
+## Indentation
+The unit of indentation is four spaces. Use of tabs should be avoided.
+
+---
+
+## Line Length
+Avoid lines longer than 200 characters. When a statement will not fit on a single line, it may be necessary to break it. Place the break after an operator, ideally after a comma. A break after an operator decreases the likelihood that a copy-paste error will be masked by semicolon insertion. The next line should be indented double the previous line’s spaces.
+
+---
+
+## Comments
+Be generous with comments. It is useful to leave information that will be read at a later time by people (possibly yourself) who will need to understand what you have done. The comments should be well-written and clear, just like the code they are annotating.
+
+Comments inside functions should start with `//`, followed by a single space.  The text should always start with a lower case.  Example:
+
+	// this is my comment
+
+Documentation comments should start with `/** ` with text placed on a new line.  
+The comment should be closed with `*/` with no text preceding the comment.  Example:
+
+	/**
+	 * Documentation text…
+	 * Some more documentation text…
+	 */
+
+Note that the alignment of the stars `*` is important for documentation generation to happen properly.
+Function parameters must also be documented with the following format:
+
+	/**
+	 * Function description…
+	 * @param ParameterName1 Parameter 1 description…
+	 * @param ParameterName2 Parameter 2 description…
+	 */
+
+---
+
+## Variable Declarations
+All variables should be declared before used.  Use of global variables should be minimised.
+
+Variable declarations should always include a variable type.  The use of `any` is prohibited unless properly documented with a reason for its use.
+
+It is preferred that each variable be given its own line and comment.  It is recommended that variables be initialised by assigning it a default value.
+
+    var currentEntry: string = ""; // currently selected table entry
+    var level: number = 0; // indentation level
+    var size: number = 10; // size of table
+    var obj: SomeObj = null; // description...
+
+JavaScript does not have block scope, so defining variables in blocks can confuse programmers who are experienced with other C family languages. Define all variables at the top of the function.
+
+---
+
+## Function Declarations
+All functions should be declared before they are used. Inner functions should follow the var statement. This helps make it clear what variables are included in its scope.
+
+There should be no space between the name of a function and the ( (left parenthesis) of its parameter list. There should be one space between the ) (right parenthesis) and the { (left curly brace) that begins the statement body. The body itself is indented four spaces. The } (right curly brace) is aligned with the line containing the beginning of the declaration of the function.
+
+    function outer(c: number, d: number): number {
+        var e: number = c * d;
+
+        function inner(a: number, b: number): number {
+            return (e * a) + b;
+        }
+
+        return inner(0, 1);
+    }
+
+Functions should always declare a return type.  If it returns nothing, it should be declared as a `void` function.
+
+	function test(): void {
+	// …
+	}
+
+All function parameters should be declared with a specific type.  The use of `any` is prohibited unless well documented with a reason for its use.
+
+If a function literal is anonymous, there should be one space between the word function and the ( (left parenthesis). If the space is omitted, then it can appear that the function's name is function, which is an incorrect reading.  Again, anonymous functions should always declare a return type.
+
+    div.onclick = function (e): boolean {
+        return false;
+    };
+
+    that = {
+        method: function (): number {
+            return this.datum;
+        },
+        datum: 0
+    };
+
+Use of global functions are restricted – all functions must be contained within a proper namespace.
+
+If a function is declared inside a class, it should always indicate whether or not it is a `private` or `public` function.
+
+When a function is to be invoked immediately, the entire invocation expression should be wrapped in parens so that it is clear that the value being produced is the result of the function and not the function itself.
+
+	var collection = (function (): Object {
+		var keys: string[] = [], values: string[] = [];
+
+		return {
+			get: function (key: string): string {
+				var at: number = keys.indexOf(key);
+				if (at >= 0) {
+					return values[at];
+				}
+			},
+			set: function (key: string, value: string): void {
+				var at: number = keys.indexOf(key);
+				if (at < 0) {
+					at = keys.length;
+				}
+				keys[at] = key;
+				values[at] = value;
+			},
+			remove: function (key: string): void {
+				var at: number = keys.indexOf(key);
+				if (at >= 0) {
+					keys.splice(at, 1);
+					values.splice(at, 1);
+				}
+			}
+		};
+	});
+
+---
+
+## Names
+Names should be formed from the 26 upper and lower case letters (A .. Z, a .. z), the 10 digits (0 .. 9), and _ (underbar). Avoid use of international characters because they may not read well or be understood everywhere. **Do not** use `$` (dollar sign) or `\` (backslash) in names.
+
+The use of the underscore `_` is restricted to indicating private class-scope variables.  It should not be used anywhere else.
+
+Most variables and functions should start with a lower case letter.
+
+Global variables should be in all caps. (JavaScript does not have macros or constants, so there isn't much point in using all caps to signify features that JavaScript doesn't have.)
+
+---
+
+## Class Declarations
+Class names should always use Pascal case (start with a capital letter, with each letter of a new word also starting with a capital letter).
+
+Only if classes are to be reused by other (external) components, should they be preceded with the `export` keyword.
+
+Class sections should always be declared in the following order:
+* Constants
+* Private variables
+* Public variables
+* Constructor
+* Public methods
+* Private methods
+
+Private variables should always start with an underscore.  The rest of the variable name should be written in Camel case.
+
+Public variables, Public methods and Private methods should all be written in Camel case.
+
+Constants must be written in all CAPS.
+
+It is preferable that all sections should be contained within a REGION section for easy collapsing.  The start and end of the regions should include the same description in order for it to display correctly when collapsed.
+
+	/**
+	 * My class documentation…
+	 */
+
+	export class MyClass {
+		// #region constants
+			public MYCONSTANT: number = 100;
+		// #endregion constants
+
+		// #region public variables
+			public someString: string;
+		// #endregion public variables
+
+		// #region private variables
+			private _someNumber: number;
+		// #endregion private variables
+
+		Constructor(param1: number) { }
+
+		// #region public methods
+		/**
+		 * Method description…
+		 * @param parameter1 Parameter 1 description…
+		 */
+
+		public someMethod1(parameter1: string): number {
+			// …
+		}
+
+		// #endregion public methods
+
+		// #region private methods
+
+		/**
+		 * Method description…
+		 * @param parameter1 Parameter 1 description…
+		 */
+		private someMethod1(parameter1: string): number {
+			// …
+		}
+		// #endregion private methods
+	}
+
+---
+
+## Interface Declarations
+Interfaces are never compiled to JavaScript.  The use of interface is to enhance productivity by adding intelli-sense to objects that would otherwise be seen as “any” objects.  It also assists in design-time compilation and error elimination.
+
+Interfaces should always start with a capital `I`, followed by the Pascal-case name of the interface.
+All interface properties and methods should be properly documented.
+
+	export interface IMyInterface {
+		/**
+		 * Variable description…
+		*/
+		myVar: number;
+	}
+
+To indicate that a property or method on an interface is optional (in other words, it might not exist on the object that implements the interface), a question mark can be added after the variable name.
+
+	myVar?: number;
+
+---
+
+## Enums
+Enums are compiled into JavaScript arrays that can return strings or numbers.  Enum names should be written in Camel Case, and should always be documented, as well as each value within the Enum.  Each value should always include a specific numeric value – undefined values (that are created by the compiler) should be avoided.
+
+	/**
+	 * Enum description…
+	 */
+	
+	export enum MyEnum {
+		/**
+		 * description…
+		 */
+		a = 1,
+		/**
+		 * description…
+		 */
+		b = 2
+	}
+
+Accessing the numeric value of an Enum uses the following format:
+
+	var enumVal: number = MyEnum[MyEnum.a];
+
+---
+
+## Regions
+Regions should be used to group sections of code that logically belong together.
+
+A region always starts with two forward-slashes, followed by a space and then the keyword `#region` followed by a space and the name or description of the region.
+
+Regions must always be enclosed with the `#endregion` keyword.
+
+	// #region My Region Name
+	   …code…
+	// #endregion My Region Name
+
+It is convenient to start and end the region with the same name.  This will ensure that the region name stays visible when the region is collapsed.
+
+---
+
+## Statements
+### Simple Statements
+Each line should contain at most one statement. Put a `;` (semicolon) at the end of every simple statement. Note that an assignment statement that is assigning a function literal or object literal is still an assignment statement and must end with a semicolon.
+
+JavaScript allows any expression to be used as a statement. This can mask some errors, particularly in the presence of semicolon insertion. The only expressions that should be used as statements are assignments and invocations.
+
+### Compound Statements
+Compound statements are statements that contain lists of statements enclosed in `{ }` (curly braces).
+* The enclosed statements should be indented four more spaces.
+* The `{` (left curly brace) should be at the end of the line that begins the compound statement.
+* The `}` (right curly brace) should begin a line and be indented to align with the beginning of the line containing the matching `{` (left curly brace).
+* Braces should be used around all statements, even single statements, when they are part of a control structure, such as an if or for statement. This makes it easier to add statements without accidentally introducing bugs.
+
+### Labels
+Statement labels are optional. Only these statements should be labeled: `while, do, for, switch`.
+
+`return` Statement
+
+A `return` statement with a value should not use `( )` (parentheses) around the value. The return value expression must start on the same line as the return keyword in order to avoid semicolon insertion.
+
+`if` Statement
+
+The `if` class of statements should have the following form:
+
+    if (condition) {
+        statements
+    }
+    
+    if (condition) {
+        statements
+    } else {
+        statements
+    }
+    
+    if (condition) {
+        statements
+    } else if (condition) {
+        statements
+    } else {
+        statements
+    }
+`for` Statement
+
+A `for` class of statements should have the following form:
+
+	for (initialisation; condition; update) {
+		statements
+	}
+
+    for (variable in object) {
+        if (filter) {
+            statements
+        } 
+    }
+
+Variables used inside the `for` statement should always be declared before it is used.  It should never be declared in-line.
+
+The first form should be used with arrays and with loops of a predetermined number of iterations.
+
+The second form should be used with objects. Be aware that members that are added to the prototype of the object will be included in the enumeration. It is wise to program defensively by using the `hasOwnProperty` method to distinguish the true members of the `object`:
+
+    for (variable in object) {
+        if (object.hasOwnProperty(variable)) {
+            statements
+        } 
+    }
+
+`while` Statement
+
+A `while` statement should have the following form:
+
+    while (condition) {
+        statements
+    }
+
+`do` Statement
+
+A `do` statement should have the following form:
+
+    do {
+        statements
+    } while (condition);
+
+Unlike the other compound statements, the `do` statement always ends with a `;` (semicolon).
+
+`switch` Statement
+
+A `switch` statement should have the following form:
+
+    switch (expression) {
+        case expression:
+            statements
+        default:
+            statements
+    }
+
+Each group of statements (except the default) should end with `break, return, or throw`. Do not fall through.
+
+`try` Statement
+
+The `try` class of statements should have the following form:
+
+    try {
+        statements
+    } catch (variable) {
+        statements
+    }
+
+    try {
+        statements
+    } catch (variable) {
+        statements
+    } finally {
+        statements
+    }
+
+`continue` Statement
+
+Avoid use of the `continue` statement. It tends to obscure the control flow of the function.
+
+`with` Statement
+
+The `with` statement should not be used.
+
+---
+
+## Whitespace
+Blank lines improve readability by setting off sections of code that are logically related.
+
+Blank spaces should be used in the following circumstances:
+* A keyword followed by `(` (left parenthesis) should be separated by a space.
+    `while (true) {`
+* A blank space should not be used between a function value and its `(` (left parenthesis). This helps to distinguish between keywords and function invocations.
+* All binary operators except `.` (period) and `(` (left parenthesis) and `[` (left bracket) should be separated from their operands by a space.
+* No space should separate a unary operator and its operand except when the operator is a word such as `typeof`.
+* Each `;` (semicolon) in the control part of a for statement should be followed with a space.
+* Whitespace should follow every `,` (comma).
+* There should be **NO** space after closing curly brackets or semi-colons.  These usually indicate the end of a statement or function or class and all code following should be placed on a new line.
+
+---
+
+## Compiler Directives
+### Debug Includes
+To include code for debugging purposes only, the following directives can be used:
+
+Single line: 
+
+	/*IFDEBUG*/ …code…
+
+Multi-line:
+
+	// #region IFDEBUG
+	… code …
+	// #endregion IFDEBUG
+
+If the debugging switch is turned off (Project > Properties > Build), all statements associated with the debug directives will be stripped from the code before the file is compiled.
+
+### Content Embedding
+To embed content into TypeScript files before they are compiled, the following directive can be used:
+
+To include JavaScript:
+
+	/*JSINJECTSTART:file/*JSINJECTEND*/
+
+In this case, `file` is replaced with the relative path to the file that must be embedded.
+Note that the file is injected as-is – not pre-formatting is applied to the file before it is embedded.
+
+To include a HTML file:
+
+	/*HTMLINJECTSTART:file/*HTMLINJECTEND*/
+
+In this case, `file` is replaced with the relative path to the file that must be embedded.
+
+Note that all quotes found in the file are escaped, and Line Feeds and New Line characters are removed, before the file is embedded.
+
+---
+
+## Bonus Suggestions
+`{}` and `[]`
+Use `{}` instead of `new Object()`. Use `[]` instead of `new Array()`.
+
+Use arrays when the member names would be sequential integers. Use objects when the member names are arbitrary strings or names.
+
+`,` (comma) Operator
+
+Avoid the use of the `,` (comma) operator. (This does not apply to the comma separator, which is used in object literals, array literals, var statements, and parameter lists.)
+
+### Block Scope
+In JavaScript blocks do not have scope. Only functions have scope. Do not use blocks except as required by the compound statements.
+
+### Assignment Expressions
+Avoid doing assignments in the condition part of `if` and `while` statements.
+
+Is
+
+	if (a = b) {
+a correct statement? Or was
+
+	if (a == b) {
+intended? Avoid constructs that cannot easily be determined to be correct.
+
+`===` and `!==` Operators.
+Only use the `===` and `!==` operators. The `==` and `!=` operators do type coercion and should not be used.
+
+### Confusing Pluses and Minuses
+Be careful to not follow a `+` with `+` or `++`. This pattern can be confusing. Insert parens between them to make your intention clear.
+
+    total = subtotal + +myInput.value;
+is better written as
+
+    total = subtotal + (+myInput.value);
+so that the `+` `+` is not misread as `++`.
+
+`eval` is Evil
+The `eval` function is the most misused feature of JavaScript. Avoid it.
+`eval` has aliases. Do not use the Function constructor. Do not pass strings to `setTimeout` or `setInterval`.
+
+------------------------------------------------------
+
+
+
+
+# Provider Pattern Contract (Strict)
+
+## Purpose
+
+This file defines the exact provider setup style required in this frontend.
+
+## Required Structure for Every Provider
+
+```text
+providers/<feature>Provider/
+  actions.tsx
+  context.tsx
+  index.tsx
+  reducer.tsx
+```
+
+This structure is mandatory. Do not deviate.
+
+## Canonical Example (Auth Provider)
+
+### `actions.tsx`
+
+```tsx
+import { createAction } from "redux-actions";
+import { IAuthStateContext, IUserLoginResponse } from "./context";
+
+export enum AuthActionEnums {
+  loginPending = "LOGIN_PENDING",
+  loginSuccess = "LOGIN_SUCCESS",
+  loginError = "LOGIN_ERROR",
+
+  registerPending = "REGISTER_PENDING",
+  registerSuccess = "REGISTER_SUCCESS",
+  registerError = "REGISTER_ERROR",
+
+  logoutPending = "LOGOUT_PENDING",
+  logoutError = "LOGOUT_ERROR",
+  logoutSuccess = "LOGOUT_SUCCESS",
+
+  getMePending = "GET_ME_PENDING",
+  getMeSuccess = "GET_ME_SUCCESS",
+  getMeError = "GET_ME_ERROR",
+}
+
+export const loginPending = createAction<IAuthStateContext>(
+  AuthActionEnums.loginPending,
+  () => ({
+    isPending: true,
+    isError: false,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const loginSuccess = createAction<IAuthStateContext, IUserLoginResponse>(
+  AuthActionEnums.loginSuccess,
+  (user: IUserLoginResponse) => ({
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    user,
+    isAuthenticated: true,
+  }),
+);
+
+export const loginError = createAction<IAuthStateContext>(
+  AuthActionEnums.loginError,
+  () => ({
+    isPending: false,
+    isError: true,
+    user: null,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const registerPending = createAction<IAuthStateContext>(
+  AuthActionEnums.registerPending,
+  () => ({
+    isPending: true,
+    isError: false,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const registerSuccess = createAction<
+  IAuthStateContext,
+  IUserLoginResponse
+>(AuthActionEnums.registerSuccess, (user: IUserLoginResponse) => ({
+  isPending: false,
+  isError: false,
+  isSuccess: true,
+  user,
+  isAuthenticated: true,
+}));
+
+export const registerError = createAction<IAuthStateContext>(
+  AuthActionEnums.registerError,
+  () => ({
+    isPending: false,
+    isError: true,
+    user: null,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const logoutPending = createAction<IAuthStateContext>(
+  AuthActionEnums.logoutPending,
+  () => ({
+    isPending: true,
+    isError: false,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const logoutError = createAction<IAuthStateContext>(
+  AuthActionEnums.logoutError,
+  () => ({
+    isPending: false,
+    isError: true,
+    isSuccess: false,
+    user: null,
+    isAuthenticated: false,
+  }),
+);
+
+export const logoutSuccess = createAction<IAuthStateContext>(
+  AuthActionEnums.logoutSuccess,
+  () => ({
+    isSuccess: false,
+    isPending: false,
+    isError: false,
+    user: null,
+    isAuthenticated: false,
+  }),
+);
+
+export const getMePending = createAction<IAuthStateContext>(
+  AuthActionEnums.getMePending,
+  () => ({
+    isPending: true,
+    isError: false,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const getMeSuccess = createAction<IAuthStateContext, IUserLoginResponse>(
+  AuthActionEnums.getMeSuccess,
+  (user: IUserLoginResponse) => ({
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    user,
+    isAuthenticated: true,
+  }),
+);
+
+export const getMeError = createAction<IAuthStateContext>(
+  AuthActionEnums.getMeError,
+  () => ({
+    isPending: false,
+    isError: true,
+    isSuccess: false,
+    user: null,
+    isAuthenticated: false,
+  }),
+);
+```
+
+### `context.tsx`
+
+```tsx
+import { createContext } from "react";
+
+export interface IUserLoginRequest {
+  email?: string | null;
+  password?: string | null;
+}
+
+export interface IUserRegisterRequest {
+  email?: string | null;
+  password?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  tenantName?: string | null;
+  tenantId?: string | null;
+  role?: string | null;
+}
+
+export interface IUserLoginResponse {
+  token?: string | null;
+  userId?: string;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  roles?: string[] | null;
+  tenantId?: string | null;
+  expiresAt?: string;
+}
+
+export interface IAuthStateContext {
+  isSuccess: boolean;
+  isPending: boolean;
+  isError: boolean;
+  isAuthenticated: boolean;
+  user?: IUserLoginResponse | null;
+}
+
+export interface IAuthActionContext {
+  login: (payload: IUserLoginRequest) => Promise<void>;
+  register: (payload: IUserRegisterRequest) => Promise<void>;
+  logout: () => Promise<void>;
+  getMe: () => Promise<void>;
+}
+
+export const INITIAL_STATE: IAuthStateContext = {
+  isSuccess: false,
+  isPending: false,
+  isError: false,
+  isAuthenticated: false,
+  user: null,
+};
+
+export const AuthStateContext = createContext<IAuthStateContext>(INITIAL_STATE);
+
+export const AuthActionContext = createContext<IAuthActionContext>(undefined!);
+```
+
+### `index.tsx`
+
+```tsx
+"use client";
+import React, { useReducer, useContext, useEffect } from "react";
+import {
+  INITIAL_STATE,
+  AuthActionContext,
+  AuthStateContext,
+  IUserLoginRequest,
+  IUserRegisterRequest,
+} from "./context";
+import { AuthReducer } from "./reducer";
+import {
+  loginPending,
+  loginSuccess,
+  loginError,
+  registerPending,
+  registerSuccess,
+  registerError,
+  logoutPending,
+  logoutSuccess,
+  logoutError,
+  getMePending,
+  getMeSuccess,
+  getMeError,
+} from "./actions";
+import { axiosInstance } from "@/utils/axiosInstance";
+import { useRouter } from "next/navigation";
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  /* Functional component formatthroughout app
+   * All provider logic (state management, side effects, etc.) must be contained within this component.
+   * Hooks defined first at the top of component, followed by , helper functions, action functions, and then the return statement with context providers.
+   * The same applies to non provider components as well exept for them returning the ui components, maintain this structure for consistency and readability.
+   */
+
+  const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
+
+  const login = async (payload: IUserLoginRequest) => {
+    dispatch(loginPending());
+    await axiosInstance()
+      .post("/api/Auth/login", payload)
+      .then((response) => {
+        dispatch(loginSuccess(response.data));
+        sessionStorage.setItem("token", response.data.token);
+        router.push("/dashboard");
+      })
+      .catch((error) => {
+        dispatch(loginError());
+        console.error(error.message);
+      });
+  };
+
+  const register = async (payload: IUserRegisterRequest) => {
+    dispatch(registerPending());
+    await axiosInstance()
+      .post("/api/Auth/register", payload)
+      .then((response) => {
+        dispatch(registerSuccess(response.data));
+        sessionStorage.setItem("token", response.data.token);
+        router.push("/dashboard");
+      })
+      .catch((error) => {
+        console.error(error);
+        dispatch(registerError());
+      });
+  };
+
+  const logout = async () => {
+    dispatch(logoutPending());
+    await Promise.resolve()
+      .then(() => {
+        sessionStorage.removeItem("token");
+        dispatch(logoutSuccess());
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+        dispatch(logoutError());
+      });
+  };
+
+  const getMe = async () => {
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      dispatch(getMePending());
+      await axiosInstance()
+        .get("/api/Auth/me")
+        .then((response) => {
+          dispatch(getMeSuccess(response.data));
+        })
+        .catch((error) => {
+          console.error(error);
+          sessionStorage.removeItem("token");
+          dispatch(getMeError());
+        });
+    }
+  };
+
+  return (
+    <AuthStateContext.Provider value={state}>
+      <AuthActionContext.Provider value={{ login, register, logout, getMe }}>
+        {children}
+      </AuthActionContext.Provider>
+    </AuthStateContext.Provider>
+  );
+};
+
+export const useAuthState = () => {
+  const context = useContext(AuthStateContext);
+  if (context === undefined) {
+    throw new Error("useAuthState must be used within an AuthProvider");
+  }
+  return context;
+};
+
+export const useAuthActions = () => {
+  const context = useContext(AuthActionContext);
+  if (context === undefined) {
+    throw new Error("useAuthActions must be used within an AuthProvider");
+  }
+  return context;
+};
+```
+
+### `reducer.tsx`
+
+```tsx
+import { handleActions } from "redux-actions";
+import { INITIAL_STATE, IAuthStateContext } from "./context";
+import { AuthActionEnums } from "./actions";
+
+export const AuthReducer = handleActions<
+  IAuthStateContext,
+  Partial<IAuthStateContext>
+>(
+  {
+    [AuthActionEnums.loginPending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.loginSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.loginError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+
+    [AuthActionEnums.registerPending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.registerSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.registerError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+
+    [AuthActionEnums.logoutPending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.logoutError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.logoutSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+
+    [AuthActionEnums.getMePending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.getMeSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.getMeError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+  },
+  INITIAL_STATE,
+);
+```
+
+## Required Axios Factory
+
+```ts
+import axios from "axios";
+
+export const axiosInstance = () => {
+  const token =
+    globalThis.window !== undefined ? sessionStorage.getItem("token") : null;
+  const baseURL = process.env.NEXT_PUBLIC_API_LINK;
+
+  return axios.create({
+    baseURL: baseURL,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+};
+```
+
+## Required Page/Provider Composition Style
+
+```tsx
+"use client";
+
+import React, { useEffect } from "react";
+import { Row, Col, Typography, Button, Divider } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
+import {
+  DashboardProvider,
+  useDashboardActions,
+  useDashboardState,
+} from "@/providers/dashboardProvider";
+import { IContractDto } from "@/providers/contractProvider/context";
+import { ISalesPerformanceDto } from "@/providers/dashboardProvider/context";
+import { useAuthState } from "@/providers/authProvider";
+import { isAdminOrManager } from "@/utils/roles";
+import { toArray } from "@/utils/helpers";
+import KpiCards from "@/components/dashboard/overview/KpiCards";
+import ActivitiesSummaryCards from "@/components/dashboard/overview/ActivitiesSummaryCards";
+import PipelineBarChart from "@/components/dashboard/overview/PipelineBarChart";
+import RevenueTrendChart from "@/components/dashboard/overview/RevenueTrendChart";
+import ContractsExpiringTable from "@/components/dashboard/overview/ContractsExpiringTable";
+import TopPerformersTable from "@/components/dashboard/overview/TopPerformersTable";
+import { useStyles } from "@/components/dashboard/overview/style/style";
+import AiInsightsCard from "@/components/aiInsightsCard";
+
+const { Title } = Typography;
+
+const DashboardContent: React.FC = () => {
+  /* Functional component formatthroughout app
+   * All provider logic (state management, side effects, etc.) must be contained within this component.
+   * Hooks defined first at the top of component, followed by , helper functions, action functions, and then the return statement composing the UI.
+   */
+  const { user } = useAuthState();
+  const canViewTopPerformers = isAdminOrManager(user?.roles);
+  const {
+    getDashboardOverview,
+    getSalesPerformance,
+    getContractsExpiring,
+    getActivitiesSummary,
+    getDashboardPipelineMetrics,
+  } = useDashboardActions();
+  const { isPending, overview, salesPerformance, contractsExpiring } =
+    useDashboardState();
+  const { styles } = useStyles();
+
+  useEffect(() => {
+    getDashboardOverview();
+    if (canViewTopPerformers) getSalesPerformance(5);
+    getContractsExpiring(30);
+    getActivitiesSummary();
+    getDashboardPipelineMetrics();
+  }, [
+    getDashboardOverview,
+    getSalesPerformance,
+    getContractsExpiring,
+    getActivitiesSummary,
+    getDashboardPipelineMetrics,
+    canViewTopPerformers,
+  ]);
+
+  const fetchAll = () => {
+    getDashboardOverview();
+    if (canViewTopPerformers) getSalesPerformance(5);
+    getContractsExpiring(30);
+    getActivitiesSummary();
+    getDashboardPipelineMetrics();
+  };
+
+  const performanceList: ISalesPerformanceDto[] = Array.isArray(
+    salesPerformance,
+  )
+    ? salesPerformance
+    : [];
+  const expiringList = toArray<IContractDto>(
+    contractsExpiring as IContractDto[] | null,
+  );
+  const pipelineStages = overview?.pipeline.stages ?? [];
+
+  const dashboardContext = {
+    pipelineValue: overview?.opportunities?.pipelineValue,
+    winRate: overview?.opportunities?.winRate,
+    totalOpportunities: overview?.opportunities?.totalCount,
+    wonDeals: overview?.opportunities?.wonCount,
+    upcomingActivities: overview?.activities?.upcomingCount,
+    overdueActivities: overview?.activities?.overdueCount,
+    activeContracts: overview?.contracts?.totalActiveCount,
+    contractValue: overview?.contracts?.totalContractValue,
+    expiringContracts: overview?.contracts?.expiringThisMonthCount,
+    revenueThisMonth: overview?.revenue?.thisMonth,
+    revenueThisQuarter: overview?.revenue?.thisQuarter,
+    revenueThisYear: overview?.revenue?.thisYear,
+  };
+
+  return (
+    <div className={styles.pageWrapper}>
+      <div className={styles.pageHeader}>
+        <Title level={2} className={styles.pageTitle}>
+          Dashboard Overview
+        </Title>
+        <Button
+          icon={<ReloadOutlined spin={isPending} />}
+          onClick={fetchAll}
+          loading={isPending}
+          className={styles.refreshBtn}
+        >
+          Refresh
+        </Button>
+      </div>
+
+      <KpiCards overview={overview} loading={isPending} />
+
+      <Divider className={styles.sectionDivider} />
+
+      <div className={styles.activitiesHeader}>
+        <Title level={5} className={styles.sectionSubtitle}>
+          Activities Overview
+        </Title>
+        <ActivitiesSummaryCards
+          activities={overview?.activities}
+          loading={isPending}
+        />
+      </div>
+
+      <Divider className={styles.sectionDivider} />
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={12}>
+          <PipelineBarChart stages={pipelineStages} loading={isPending} />
+        </Col>
+        <Col xs={24} lg={12}>
+          <RevenueTrendChart revenue={overview?.revenue} loading={isPending} />
+        </Col>
+      </Row>
+
+      <Divider className={styles.sectionDivider} />
+
+      <AiInsightsCard
+        data={dashboardContext}
+        type="dashboard"
+        disabled={!overview}
+      />
+
+      <Divider className={styles.sectionDivider} />
+
+      <Row gutter={[16, 16]}>
+        {canViewTopPerformers && (
+          <Col xs={24} xl={14}>
+            <TopPerformersTable
+              performers={performanceList}
+              loading={isPending}
+            />
+          </Col>
+        )}
+        <Col xs={24} xl={canViewTopPerformers ? 10 : 24}>
+          <ContractsExpiringTable
+            contracts={expiringList}
+            loading={isPending}
+          />
+        </Col>
+      </Row>
+    </div>
+  );
+};
+
+const DashboardPage: React.FC = () => (
+  <DashboardProvider>
+    <DashboardContent />
+  </DashboardProvider>
+);
+
+export default DashboardPage;
+```
+
+## Required `antd-style` Pattern Example
+
+```tsx
+import { createStyles, css } from "antd-style";
+
+export const useStyles = createStyles(({ token }) => ({
+  container: css`
+    min-height: 100vh;
+    background: radial-gradient(circle at 0% 0%, #3a3f47 0%, #1a1c22 100%);
+    width: 100%;
+  `,
+
+  sider: css`
+    background: rgba(58, 63, 71, 0.4) !important;
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+    .ant-layout-sider-children {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ant-menu {
+      background: transparent !important;
+      border: none !important;
+    }
+
+    .ant-menu-item-selected {
+      background-color: rgba(255, 255, 255, 0.12) !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+  `,
+
+  logoWrapper: css`
+    height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    margin-bottom: 8px;
+  `,
+
+  header: css`
+    &.ant-layout-header {
+      background: rgba(58, 63, 71, 0.6) !important;
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+  `,
+
+  triggerBtn: css`
+    &.ant-btn {
+      color: white;
+      font-size: 18px;
+      width: 64px;
+      height: 64px;
+      border: none;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: ${token.colorPrimary};
+      }
+    }
+  `,
+
+  content: css`
+    margin: 24px 16px;
+    padding: 24px;
+    min-height: 280px;
+    background: rgba(58, 63, 71, 0.3) !important;
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+    h1,
+    p {
+      color: white;
+    }
+  `,
+
+  imageIcon: css`
+    filter: brightness(0) invert(1);
+    object-fit: contain;
+  `,
+
+  logoutBtn: css`
+    &.ant-btn {
+      color: white;
+      font-size: 14px;
+      height: 64px;
+      padding: 0 16px;
+      margin-left: auto;
+      border: none;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: ${token.colorError};
+      }
+    }
+  `,
+
+  innerLayout: css`
+    &.ant-layout {
+      background: transparent;
+    }
+  `,
+}));
+```
+
+## Inline Styling Rule
+
+Inline styling should never be used.
+All styling must be defined through the required `style.ts` pattern using `antd-style`.
+
+## Enforcement Rule
+
+-For every new provider module, copy this exact pattern and only rename feature-specific types/actions/endpoints.
+No structural deviations are allowed.
+- folders should only contain the 4 files, : action, context, index, reducer
+Ensure to put layouts in the layouts folder at root of netxjs app, components in the components folder, utils in utis folder, hoc ='s in the hoc folder routes in the routes folder, types in the types folder, constants in the constants folder ensure in any component file no loose data, types, interfaces or helper methods are put in their correct files and folders and importted
+
+[$speckit-plan](C:\\Users\\Hashim\\Documents\\Git Repos\\JourneyPoint\\.agents\\skills\\speckit-plan\\SKILL.md) 
+# Updated C Sharp Coding Standards
+
+> **NOTE:** This page is still very much a work in progress.
+
+## Basic Standards
+
+NO FILES Above 350 lines
+Good clean code should read like a novel. It's recognizable at a glance; well-organized and elegant. As you go through it, you understand its intent without excessive head-scratching or navigating through convoluted logic.
+You should aspire to write such code at all times.
+The following practices are also prerequisites to progress to intermediate level.
+
+1. **Enough comments** to encourage reuse. Classes and methods which are not easily understood are not reused. Therefore:
+   1. All classes must have a comment describing their purpose, unless it would be self-evident even to a Junior Dev new to the project.
+   1. All public methods must have a comment describing their purpose.
+   1. Any section of code performing non-obvious logic or making non-obvious assumptions should be preceded with a comment describing the logic implemented or assumptions made.
+1. **Keep classes short** - As a rule of thumb, any class longer than 350 lines is likely to be too long and trying to do too many things violating the [Single Responsibility Principle](https://malshikay.medium.com/single-responsibility-principle-in-c-62c00a87988a).
+1. **Keep methods short and easy to understand** - As a rule of thumb, any method that requires you to scroll vertically on your code editor to view the full method definition is getting too long (though in some cases it can be unavoidable). Most of the time, however, extracting out sections into explicitly named sub methods, will enhance readability significantly.
+1. **Order Class Members Logically** - Arrange the members of your class in a logical order to minimize the reader's need to jump around to understand the flow. For instance, group related properties together, placing the most significant ones at the top. If methods are intended to be called in a certain order, their arrangement in the class should mirror this sequence. Sub-methods that are exclusively called by a parent method should be positioned immediately after the parent method, following the logical sequence.
+1. **Use #region on long classes** - Using `#region` can help organize your code especially in longer classes. For example, to group the sub methods called by a parent method together.
+1. **Use Guard Clauses** - Use Guard clauses to Test for all the necessary preconditions for a complex method to execute up-front is a great way to clean up your code. It not only clearly communicates the preconditions and expectations are for anyone calling your method, but also simplifies the code in the body of the method as it removes the need to perform checks further down. [See](https://www.youtube.com/watch?v=UUehR_VNyro)
+   - Use [Ardalis.GaurdClauses](https://github.com/ardalis/GuardClauses) as a standard library
+1. **Excessive nesting** - Excessive nesting through nested conditional (`if`, `switch`) and looping (`while`, `foreach`) statements Can make the code difficult to read. If you are nesting three layers deep or more you should probably consider refactoring. Extracting out a nested section into a separate method can usually help, as well as applying the early return principle.
+1. **Proper variable and method naming** - Ensure you use clear variable and method names (without spelling mistakes!) and be consistent in your naming conventions. Sometimes it can take time to find just the right name that clearly conveys the correct meaning and intent, but it pays dividends in the long term through improved clarity and maintainability. Don't rush this!
+1. **Replace 'Magic numbers' with constants or enums** - [See example](https://refactoring.guru/replace-magic-number-with-symbolic-constant).
+1. **DRY - Don't Repeat Yourself** - 'Copy and paste coding' is lazy and rude, and creates bloat that is difficult to maintain in the long term. If your code looks similar to another section, extract out the common logic into a reusable method.
+1. **Simple and Direct** - Adhering to the KISS (Keep It Simple Stupid) principle, well-written code should be as uncomplicated as possible, facilitating easy understanding and debugging. Generally, the fewer lines of code required to accomplish a task, the better. However, there are exceptions, such as when a single conditional statement or Linq statements attempts to incorporate too many conditions, making it convoluted. In such cases, it's preferable to expand the code to make it easier to understand.
+1. **Format your code** - Visual Studio tends to format your code automatically, but poorly formatted code still makes its way into the repos which betrays a lack of attention to detail. Use these shortcuts to do it effortlessly.
+   - `Ctrl+E, Ctrl+D` to format the entire document.
+   - `Ctrl+E, Ctrl+F` to format the selection.
+1. **Remove dead code** - It is sometimes scary deleting sections of code especially if you did not write it but any code which is no longer utilized still adds clutter and confusion which hinders maintainability. If it is no longer used delete it!
+
+### Useful resources:
+
+- [5 Awesome C# Refactoring Tips](https://www.milanjovanovic.tech/blog/5-awesome-csharp-refactoring-tips)
+- (10 Coding Principles Explained in 5 Minutes)[https://www.youtube.com/watch?v=GmXPwRNIrAU]
+- [The Art of Code Refactoring in C#](https://medium.com/@kerimkkara/the-art-of-code-refactoring-in-c-d02f0346a1dd)
+- [Refactoring Course](https://refactoring.guru/refactoring/course) - We'll sponsor the cost of the course for anyone who wants to complete this!
+- [Clean Code presentation from Uncle Bob](https://www.youtube.com/watch?v=7EmboKQH8lM&list=PLmmYSbUCWJ4x1GO839azG_BBw8rkh-zOj) - A bit long but easy to watch and full of wisdom
+
+## Efficient
+
+Good code should be efficient and free from obvious performance issues. The most common performance issues usually include:
+
+- Using loops that cause excessive database calls instead of consolidating them into a single SQL query when possible. For example:
+  - Looping through, causing multiple SELECT statements to the database where a 'flattened entity' joining the appropriate tables would reduce this to a single SELECT call.
+  - Looping through to make multiple updates instead of a single bulk update statement.
+- Not performing database indexing for queries expected to be made often by the application.
+
+## Solution Structure
+
+- Always follow the solution templates which follows the Clean Architecture structure
+- Always place classes the right
+
+### Common Mistakes
+
+- Domain logic in the AppService
+- Placing DTO classes in the domain layer:
+  - Because DTO classes often look very much like entity classes, less experienced developers are often tempted to place DTOs in the domain project. This should not be the case as a matter of course. DTOs should be placed under a `Dtos` folder next to the AppService which uses. There can be some exceptions when a Dto is used as a parameter to a domain service, in which case it is acceptable to have the Dto place in the same folder as the DomainService.
+  - When creating a Dto that serves a single function (e.g create or update or response only), the naming convention should take on the following format `{end-pointname}Request` e.g `CreateFieldServiceProfileRequest`.
+
+---
+
+# HRIS Backend AN EXAMPLE OF HOW A ABP BACKEND IS MADE AT BOXFUSION - Architecture & Folder Structure Guide
+
+## Overview
+
+The HRIS (Human Resources Information System) backend is a **Domain-Driven Design (DDD)** application built on the **ASP.NET Boilerplate (ABP)** framework targeting **.NET 9**, using **PostgreSQL** as the database. The solution follows a layered, modular monolith architecture with clear separation of concerns.
+
+---
+
+## Solution Structure
+
+```
+aspnet-core/
+├── src/
+│   ├── hrisApi.Core/                  # Domain Layer
+│   ├── hrisApi.Application/           # Application Service Layer
+│   ├── hrisApi.EntityFrameworkCore/   # Data Access / Infrastructure Layer
+│   ├── hrisApi.Web.Core/              # Web Infrastructure Layer
+│   └── hrisApi.Web.Host/              # Presentation / API Host Layer
+├── test/
+│   ├── hrisApi.Tests/                 # Unit & Integration Tests
+│   └── hrisApi.Web.Tests/             # Web / API Tests
+└── hrisApi.sln
+```
+
+The layers have a strict one-way dependency direction:
+
+```
+Web.Host
+  └── Web.Core
+        └── Application
+              ├── Core  (Domain)
+              └── EntityFrameworkCore
+                    └── Core  (Domain)
+```
+
+No layer may reference a layer above it.
+
+---
+
+## Layer Breakdown
+
+---
+
+### 1. `hrisApi.Core` — Domain Layer
+
+**Purpose:** Contains all business entities, domain logic, and domain-specific services. This is the heart of the application and has **no dependency on any other project layer**.
+
+
+Example:
+```
+[Project]Api.Core/
+├── [Project]ApiCoreModule.cs               # ABP module registration for Core
+├── Authorization/
+│   ├── Roles/                         # Role definitions & seeds
+│   └── Users/                         # User manager & login service
+├── Configuration/                     # App configuration helpers
+├── Debugging/                         # Debug-time utilities
+├── Domains/                           # Business domain entities
+│   ├── Attendance Management/
+│   │   ├── AbsenceReport.cs
+│   │   ├── AttendanceRecord.cs
+│   │   ├── Leave.cs
+│   │   ├── LeaveRequest.cs
+│   │   └── Project.cs
+│   ├── Employee Management/
+│   │   ├── Employee.cs
+│   │   ├── EmployeeDocument.cs
+│   │   ├── EmployeeManager.cs         # Domain service for employee logic
+│   │   └── Helpers/TaxCalculator.cs
+│   ├── Payroll Processing/
+│   │   ├── BonusOrCommission.cs
+│   │   ├── PayrollProfile.cs
+│   │   ├── PayrollTransaction.cs
+│   │   └── Reimbursement.cs
+│   ├── Recruitment Module/
+│   │   ├── Applicant.cs
+│   │   ├── Interview.cs
+│   │   ├── JobApplication.cs
+│   │   ├── JobPosting.cs
+│   │   └── OfferLetter.cs
+│   └── HRReport.cs
+├── Editions/                          # SaaS edition definitions
+├── Features/                          # SaaS feature management
+├── Identity/                          # Identity customizations
+├── Localization/
+│   └── SourceFiles/                   # XML localization resource files
+├── MultiTenancy/                      # Tenant entity & manager
+├── Timing/                            # Clock & timezone helpers
+├── Validation/                        # Custom validation attributes
+└── Web/                               # Web-specific domain helpers
+```
+
+#### Rules for the Domain Layer
+
+- All entities **must** extend `FullAuditedEntity<Guid>` to get `CreationTime`, `CreatorUserId`, `LastModificationTime`, `LastModifierUserId`, `IsDeleted`, and `DeletionTime` automatically.
+- Entities use **data annotations** for property-level validation (`[Required]`, `[MaxLength]`, `[Phone]`, etc.).
+- Domain services (e.g., `EmployeeManager`) encapsulate logic that does not belong to a single entity.
+- **No** EF Core, HTTP, or application-layer references are allowed here.
+
+#### Example — Entity
+
+```csharp
+// Domains/Employee Management/Employee.cs
+public class Employee : FullAuditedEntity<Guid>
+{
+    public string EmployeeNumber { get; set; }
+
+    public long UserId { get; set; }
+
+    [ForeignKey("UserId")]
+    public User User { get; set; }
+
+    [Required]
+    [Phone]
+    public string ContactNo { get; set; }
+}
+```
+
+---
+
+### 2. `[Project]Api.Application` — Application Service Layer
+
+**Purpose:** Orchestrates domain entities to fulfil use cases. Exposes **application services** consumed by the Web layer. Contains **DTOs** and **AutoMapper** profiles.
+
+Example for Structue and files
+```
+[Project]Api.Application/
+├── hrisApiApplicationModule.cs        # ABP module registration; configures AutoMapper
+├── Authorization/
+│   └── Accounts/
+│       └── Dto/
+├── Configuration/
+│   ├── Dto/
+│   └── Ui/
+├── MultiTenancy/
+│   └── Dto/
+├── Services/                          # One folder per domain service
+│   ├── AbsenceReportService/
+│   │   ├── IAbsenceReportAppService.cs
+│   │   ├── AbsenceReportAppService.cs
+│   │   └── DTO/
+│   │       └── AbsenceReportDto.cs
+│   ├── AttendaceRecordService/
+│   │   ├── IAttendanceRecordAppService.cs
+│   │   ├── AttendanceRecordAppService.cs
+│   │   └── DTO/
+│   ├── BonusOrCommissionService/
+│   │   └── DTO/
+│   ├── EmailService/
+│   │   └── DTO/
+│   ├── Employee Management/
+│   │   ├── DTO/
+│   │   └── Helpers/
+│   ├── InterviewService/
+│   │   └── DTO/
+│   ├── JobApplicationService/
+│   │   └── DTO/
+│   ├── JobPostingService/
+│   │   └── DTO/
+│   ├── LeaveRequestService/
+│   │   └── DTO/
+│   ├── LeaveService/
+│   │   └── DTO/
+│   ├── PayrollProfileService/
+│   │   └── DTO/
+│   ├── PayrollTransactionService/
+│   │   └── DTO/
+│   ├── ProjectService/
+│   │   └── DTO/
+│   └── ReimbursementService/
+│       └── DTO/
+├── Roles/
+│   └── Dto/
+├── Sessions/
+│   └── Dto/
+└── Users/
+    └── Dto/
+```
+
+#### Naming Conventions
+
+| Artifact          | Convention                       | Example                    |
+| ----------------- | -------------------------------- | -------------------------- |
+| Service interface | `I{Entity}AppService`            | `ILeaveRequestAppService`  |
+| Service class     | `{Entity}AppService`             | `LeaveRequestAppService`   |
+| DTO folder        | `DTO/` inside the service folder | `LeaveRequestService/DTO/` |
+| DTO class         | `{Entity}Dto`                    | `LeaveRequestDto`          |
+
+#### Rules for the Application Layer
+
+- Every service class **must** have a corresponding interface.
+- Services extend `AsyncCrudAppService<TEntity, TDto, TPrimaryKey>` for standard CRUD, or `ApplicationService` for custom logic.
+- Apply `[AbpAuthorize]` on the class or individual methods to enforce authentication/authorisation.
+- DTOs must be decorated with `[AutoMap(typeof(TEntity))]` so AutoMapper can map between the entity and the DTO without manual configuration.
+- DTOs must **not** expose EF navigation properties directly — flatten or nest explicitly.
+
+#### Example — Service
+
+```csharp
+// Services/AbsenceReportService/AbsenceReportAppService.cs
+[AbpAuthorize]
+public class AbsenceReportAppService
+    : AsyncCrudAppService<AbsenceReport, AbsenceReportDto, Guid>,
+      IAbsenceReportAppService
+{
+    public AbsenceReportAppService(IRepository<AbsenceReport, Guid> repository)
+        : base(repository) { }
+}
+```
+
+#### Example — DTO
+
+```csharp
+// Services/AbsenceReportService/DTO/AbsenceReportDto.cs
+[AutoMap(typeof(AbsenceReport))]
+public class AbsenceReportDto : EntityDto<Guid>
+{
+    public Guid EmployeeId { get; set; }
+    public DateTime Date { get; set; }
+    public string AbsenceType { get; set; }
+}
+```
+
+---
+
+### 3. `[Project]Api.EntityFrameworkCore` — Data Access / Infrastructure Layer
+
+**Purpose:** Implements the repository interfaces defined in the domain using **Entity Framework Core** and **PostgreSQL (Npgsql)**.
+
+```
+[Project]Api.EntityFrameworkCore/
+├── [Project]ApiEntityFrameworkModule.cs    # ABP module registration; registers DbContext
+├── EntityFrameworkCore/
+│   ├──[Project]ApiDbContext.cs            # Main DbContext — declares all DbSet<T>
+│   ├── [Project]ApiDbContextConfigurer.cs  # Configures the PostgreSQL provider
+│   ├── [Project]ApiDbContextFactory.cs     # Design-time factory for EF migrations
+│   ├── AbpZeroDbMigrator.cs           # Runs pending migrations on startup
+│   ├── Repositories/
+│   │   └── hrisApiRepositoryBase.cs   # Custom base repository (extension point)
+│   ├── Seed/
+│   │   └── Host/
+│   │       ├── DefaultEditionCreator.cs
+│   │       ├── DefaultLanguagesCreator.cs
+│   │       ├── DefaultSettingsCreator.cs
+│   │       └── HostRoleAndUserCreator.cs
+│   └── Migrations/                    # EF Core auto-generated migration files
+```
+
+#### Rules for the Data Access Layer
+
+- Every domain entity registered in `Domains/` **must** have a corresponding `DbSet<T>` in `hrisApiDbContext`.
+- Override `OnModelCreating` only for configuration that cannot be expressed with data annotations (e.g., UTC datetime conversion, composite keys, table naming).
+- Use `IRepository<TEntity, TPrimaryKey>` injected via constructor — do not use `DbContext` directly in the Application layer.
+- New migrations are generated with `dotnet ef migrations add <MigrationName>` from within this project.
+- Seed data (default roles, settings, languages) lives in `Seed/Host/` and runs once on startup.
+
+#### Example — DbContext Registration
+
+```csharp
+// EntityFrameworkCore/[Project]ApiDbContext.cs
+public class hrisApiDbContext : AbpZeroDbContext<Tenant, Role, User, hrisApiDbContext>
+{
+    public DbSet<Employee> Employees { get; set; }
+    public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
+    public DbSet<PayrollProfile> PayrollProfiles { get; set; }
+    // ... one DbSet per domain entity
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        // e.g. UTC datetime conversion
+    }
+}
+```
+
+---
+
+### 4. `[Project]Api.Web.Core` — Web Infrastructure Layer
+
+**Purpose:** Shared web infrastructure used by both the Host and any test projects. Handles JWT configuration, external authentication providers, and base controller definitions.
+
+```
+[Project]Api.Web.Core/
+├── [Project]ApiWebCoreModule.cs            # ABP module registration for Web.Core
+├── Authentication/
+│   ├── External/                      # External OAuth/social login providers
+│   │   ├── ExternalAuthConfiguration.cs
+│   │   ├── ExternalAuthManager.cs
+│   │   ├── ExternalAuthProviderApiBase.cs
+│   │   ├── IExternalAuthManager.cs
+│   │   ├── IExternalAuthConfiguration.cs
+│   │   └── IExternalAuthProviderApi.cs
+│   └── JwtBearer/
+│       ├── TokenAuthConfiguration.cs  # JWT signing key, issuer, audience, expiry
+│       └── JwtTokenMiddleware.cs      # Middleware to validate tokens per request
+├── Configuration/                     # Web-layer configuration helpers
+├── Controllers/
+│   └── TokenAuthController.cs         # POST /api/TokenAuth/Authenticate
+├── Identity/                          # Identity UI helpers
+└── Models/                            # Auth request/response models
+```
+
+#### Rules for the Web Infrastructure Layer
+
+- All controllers must inherit from `hrisApiControllerBase` (not `Controller` directly).
+- JWT configuration (key, issuer, audience) is read from `appsettings.json` and injected via `TokenAuthConfiguration`.
+- External providers implement `IExternalAuthProviderApi` for a consistent plug-in pattern.
+- Do **not** add business logic here — only plumbing.
+
+#### Example — Auth Endpoint
+
+```csharp
+// Controllers/TokenAuthController.cs
+[Route("api/[controller]/[action]")]
+public class TokenAuthController : hrisApiControllerBase
+{
+    [HttpPost]
+    public async Task<AuthenticateResultModel> Authenticate([FromBody] AuthenticateModel model)
+    {
+        var loginResult = await GetLoginResultAsync(
+            model.UserNameOrEmailAddress, model.Password, GetTenancyNameOrNull());
+
+        var accessToken = CreateAccessToken(CreateJwtClaims(loginResult.Identity));
+
+        return new AuthenticateResultModel
+        {
+            AccessToken = accessToken,
+            ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
+            UserId = loginResult.User.Id
+        };
+    }
+}
+```
+
+---
+
+### 5. `[Project]Api.Web.Host` — Presentation / API Host Layer
+
+**Purpose:** The runnable ASP.NET Core host. Configures the middleware pipeline, dependency injection, Swagger, CORS, and logging. This is the **startup project**.
+
+```
+[Project]Api.Web.Host/
+├── Startup/
+│   ├── Program.cs                     # Entry point; Castle Windsor IoC bootstrapper
+│   ├── Startup.cs                     # ConfigureServices + Configure (middleware)
+│   └── hrisApiWebHostModule.cs        # Top-level ABP module
+├── Controllers/
+│   ├── HomeController.cs              # Redirects "/" to "/swagger"
+│   └── AntiForgeryController.cs       # Issues XSRF tokens
+├── appsettings.json                   # Environment-specific configuration
+├── appsettings.Staging.json
+├── appsettings.Production.config
+├── log4net.config                     # Logging configuration (dev)
+├── log4net.Production.config          # Logging configuration (prod)
+├── Dockerfile                         # Container build definition
+├── wwwroot/
+│   └── swagger/ui/index.html         # Custom Swagger UI shell
+└── Properties/
+    └── launchSettings.json            # VS/CLI launch profiles
+```
+
+#### Configuration — `appsettings.json` Structure
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "<PostgreSQL connection string>"
+  },
+  "App": {
+    "ServerRootAddress": "https://localhost:44311/",
+    "ClientRootAddress": "http://localhost:3000/",
+    "CorsOrigins": "http://localhost:3000,http://localhost:4200"
+  },
+  "Authentication": {
+    "JwtBearer": {
+      "SecurityKey": "<secret key>",
+      "Issuer": "hrisApi",
+      "Audience": "hrisApi"
+    }
+  },
+  "SmtpSettings": {
+    "Server": "smtp.gmail.com",
+    "Port": 587,
+    "EnableSsl": true
+  }
+}
+```
+
+#### Middleware Pipeline Order (`Startup.cs`)
+
+1. CORS
+2. ABP exception handling
+3. Static files
+4. Authentication (JWT)
+5. Authorization
+6. Routing → MVC Controllers
+7. Swagger (`/swagger`)
+8. SignalR (`/signalr`)
+
+#### Rules for the Host Layer
+
+- **No business logic** belongs here. Forward to application services via controllers auto-generated by ABP.
+- Environment-specific config overrides must go in `appsettings.{Environment}.json`, never committed with real secrets.
+- CORS origins are loaded dynamically from `App:CorsOrigins` — update that setting rather than hardcoding origins.
+
+---
+
+### 6. `hrisApi.Migrator` — Database Migration Runner
+
+**Purpose:** A standalone console tool for applying pending EF Core migrations against any environment without running the full web host.
+
+```
+[Project]Api.Migrator/
+├── Program.cs                         # Entry point
+├── [Project]ApiMigratorModule.cs           # ABP module
+└── appsettings.json                   # Connection string for migration target
+```
+
+Run with:
+
+```bash
+dotnet run --project src/[Project]Api.Migrator
+```
+
+---
+
+### 7. Test Projects
+
+```
+test/
+├── [Project]Api.Tests/                     # Unit & integration tests
+│   ├── [Project]ApiTestModule.cs
+│   └── hrisApi.Tests.csproj
+└── [Project]Api.Web.Tests/                 # HTTP-level API tests
+    ├── Startup.cs
+    ├── [Project]ApiWebTestModule.cs
+    └── [Project]Api.Web.Tests.csproj
+```
+
+---
+
+## Adding a New Feature — Step-by-Step
+
+Follow these steps every time a new business entity or feature is introduced:
+
+### Step 1 — Define the Domain Entity (`hrisApi.Core`)
+
+Create `aspnet-core/src/hrisApi.Core/Domains/{Module Name}/{EntityName}.cs`.
+
+```csharp
+public class JobGrade : FullAuditedEntity<Guid>
+{
+    [Required]
+    [MaxLength(50)]
+    public string GradeCode { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string Description { get; set; }
+
+    public decimal MinimumSalary { get; set; }
+    public decimal MaximumSalary { get; set; }
+}
+```
+
+### Step 2 — Register in DbContext (`hrisApi.EntityFrameworkCore`)
+
+Add a `DbSet<T>` to `hrisApiDbContext.cs`:
+
+```csharp
+public DbSet<JobGrade> JobGrades { get; set; }
+```
+
+### Step 3 — Create a Migration
+
+```bash
+cd aspnet-core
+dotnet ef migrations add AddJobGrade --project src/hrisApi.EntityFrameworkCore
+```
+
+### Step 4 — Create the DTO (`hrisApi.Application`)
+
+Create `Services/{Entity}Service/DTO/{Entity}Dto.cs`:
+
+```csharp
+[AutoMap(typeof(JobGrade))]
+public class JobGradeDto : EntityDto<Guid>
+{
+    public string GradeCode { get; set; }
+    public string Description { get; set; }
+    public decimal MinimumSalary { get; set; }
+    public decimal MaximumSalary { get; set; }
+}
+```
+
+### Step 5 — Create the Service Interface
+
+Create `Services/{Entity}Service/I{Entity}AppService.cs`:
+
+```csharp
+public interface IJobGradeAppService
+    : IAsyncCrudAppService<JobGradeDto, Guid>
+{
+}
+```
+
+### Step 6 — Implement the Service
+
+Create `Services/{Entity}Service/{Entity}AppService.cs`:
+
+```csharp
+[AbpAuthorize]
+public class JobGradeAppService
+    : AsyncCrudAppService<JobGrade, JobGradeDto, Guid>,
+      IJobGradeAppService
+{
+    public JobGradeAppService(IRepository<JobGrade, Guid> repository)
+        : base(repository) { }
+}
+```
+
+ABP automatically exposes this as a REST API — no controller needed.
+
+---
+
+## Cross-Cutting Concerns
+
+| Concern                  | How It Is Handled                                                |
+| ------------------------ | ---------------------------------------------------------------- |
+| **Authentication**       | JWT Bearer tokens via `TokenAuthController`                      |
+| **Authorisation**        | `[AbpAuthorize]` attribute; role-based permissions               |
+| **Audit Logging**        | `FullAuditedEntity<Guid>` on every entity                        |
+| **Soft Delete**          | Built into `FullAuditedEntity` via `IsDeleted` flag              |
+| **Validation**           | Data annotations on entities; ABP validates DTOs automatically   |
+| **Logging**              | Log4Net configured in `log4net.config`                           |
+| **Localisation**         | XML resource files in `Core/Localization/SourceFiles/`           |
+| **Multi-Tenancy**        | ABP Zero tenant management; `TenantId` on every entity           |
+| **Exception Handling**   | ABP global exception handler; returns consistent error envelopes |
+| **Dependency Injection** | Castle Windsor (ABP default); registered per ABP module          |
+| **Object Mapping**       | AutoMapper; configured automatically via `[AutoMap]` attribute   |
+
+---
+
+## Technology Stack
+
+| Component      | Technology                               |
+| -------------- | ---------------------------------------- |
+| Framework      | ASP.NET Boilerplate (ABP Zero) on .NET 9 |
+| Database       | PostgreSQL via Npgsql                    |
+| ORM            | Entity Framework Core                    |
+| IoC Container  | Castle Windsor                           |
+| Object Mapping | AutoMapper                               |
+| Authentication | JWT Bearer (HS256)                       |
+| API Docs       | Swagger / OpenAPI                        |
+| Real-Time      | SignalR                                  |
+| Email          | MailKit / SMTP                           |
+| PDF Generation | iTextSharp                               |
+| Logging        | Log4Net                                  |
+| Testing        | xUnit (via ABP test helpers)             |
+
+# Updated NextJs Best Practices
+## Tips for Clean and Efficient Code
+
+### Utilize File-Based Routing
+Next.js employs a file-based routing system, allowing you to create pages simply by adding React components in the “pages” directory. Adhering to this convention not only makes your project structure more organized but also simplifies the management of routes and improves code maintainability.
+
+### Leverage Server-Side Rendering Wisely
+While server-side rendering enhances SEO and initial page load times, it may not be necessary for all pages. Identify pages that require SSR, such as dynamic or content-heavy pages, and use Next.js’s “getServerSideProps” or “getInitialProps” functions selectively for optimal performance.
+
+### Embrace Static Site Generation (SSG)
+Static Site Generation offers better performance and scalability compared to SSR for pages with static content. For pages that do not require real-time data, leverage SSG with “getStaticProps” to generate static HTML files at build time and serve them directly to users, reducing server load.
+
+### Optimize Image Loading
+Images can significantly impact page load times. Use Next.js’s “Image” component, which automatically optimizes images and provides lazy loading, ensuring faster rendering and improved performance.
+
+### Code Splitting and Dynamic Imports
+Take advantage of Next.js’s built-in code splitting feature to divide your application code into smaller, more manageable chunks. Use dynamic imports to load non-essential components only when needed, reducing the initial bundle size and improving overall page load times.
+
+### Minimize Third-Party Dependencies
+Be cautious when adding third-party libraries and packages to your project, as they can increase the bundle size and affect performance. Opt for lightweight alternatives or, where feasible, write custom solutions to reduce dependencies.
+
+### Manage State Effectively
+Select the appropriate state management solution for your project, such as React’s built-in “useState” and “useReducer” hooks or external libraries like Redux or Zustand. Keep the global state minimal, and prefer passing data between components using props whenever possible.
+
+### Opt for TypeScript Integration
+Integrating TypeScript in your Next.js project provides static type-checking, reducing the chances of runtime errors and enhancing code reliability. Embrace TypeScript to improve code maintainability and collaboration within your team.
+
+### Properly Handle Error States
+Handle error states gracefully by implementing custom error pages using Next.js’s “ErrorBoundary” or the “getStaticProps” and “getServerSideProps” functions. Providing users with informative error messages enhances user experience and helps identify and resolve issues quickly.
+
+### Implement Caching Strategies
+Leverage caching techniques, such as HTTP caching and data caching, to reduce server requests and enhance performance. Caching can significantly improve response times for frequently requested resources.
+
+------------------------------------------------------
+# Updated NextJs Code Style
+
+# Code Style Guidelines
+
+### Code should be functional in style rather than Object Orientated or Imperative unless there are no clean alternatives.
+
+* Use pure functions where possible to make them testable and modular.
+* Avoid mutating variables and the let keyword.
+* Prefer functional & immutable array methods .ie map/filter/reduce/some/every over any types of mutable for loop.
+* Prefer `return early` coding style, more about it here.
+* Avoid classes and stateful modules where possible.
+* Don't Repeat Yourself. Make extensive use of the constants and utils files for re-usable strings and methods.
+* Don't obsess over performance of code, obsess over making it clear.
+* The above rules can be relaxed for test scripts.
+
+### React components should be simple and composable and cater to real life UI design problems:
+
+* `Simplicity`: Strive to keep the component API fairly simple and show real-world scenarios of using the component.
+* `Representational`: React components should be templates, free of logic, and purely presentational. It aims to make our components shareable and easy to test.
+* `Composition`: Break down components into smaller parts with minimal props to keep complexity low, and compose them together. This will ensure that the styles and functionality are flexible and extensible.
+* `Accessibility`: When creating a component, keep accessibility top of mind. This includes keyboard navigation, focus management, color contrast, voice over, and the correct aria-* attributes.
+* `Naming Props`: We all know naming is the hardest thing in this industry. Generally, ensure a prop name is indicative of what it does. Boolean props should be named using auxiliary verbs such as does, has, is and should. For example, Button uses `isDisabled`, `isLoading`, etc.
+
+### When doing styling, strive to use `tailwindcss` classes for consistency and painless maintenance.
+
+* Avoid hard coding colors. All colors from the design guideline should be pre-defined in tailwind.js. Please use them with respect.
+* Try to avoid injecting styles via style attribute because it's impossible to build responsiveness with inline styles. Strive to only use Tailwind classes for sizing, spacing, and building grid layouts.
+
+// Don't
+
+	<div style={{marginLeft: '8px'}}></div>
+
+// Do
+
+	<div className="ml-2"></div
+
+// Grid layout
+
+	<div className="grid grid-cols-3 gap-5">
+	  <div className="col-span-2"></div>
+	  <div className="col-span-1"></div>
+	</div>
+### Maintain the separation of concerns in the folder structure laid out in the initial scaffold:
+
+* `constants/` contains shared variables used across the app.
+* `components/` contains shared ui components used across the app.
+* `utils/` contains shared functions used across the app.
+* `hooks/` contains shared hooks used across the app.
+* `types/` contains common TypeScript types or interfaces.
+
+### When adding third party libraries to the project consider carefully the following;
+
+* Is this a trivial package we can easily write in-house? If so, take the time to roll your own.
+* Is this library well supported, under active development and widely used in the community? If not, do not use it.
+* Do we use a similar but different library for the same task elsewhere in the company? If so, use this library for developer familiarity and consistency.
+* Will this library impact significantly performance or bundle size eg Lodash or Moment? If so, consider carefully if it is necessary or if there is a better alternative.
+
+### TypeScript helps write code better but should be used with care to not lose its strengths:
+
+* Avoid using any when possible. Using any is sometimes valid, but should rarely be used, even if to make quicker progress. Even Unknown is better than using any if you aren't sure of an input parameter.
+* Pay attention when using the non-null assertion operator !. Only use if you know that a variable cannot be null right now rather than blindly using it to pass the validation step.
+
+### File naming should be PascalCase for all React components files and kebab-case for the rest.
+
+Exports from files can be either as variable or default exports, but please stick to naming the object before using export default to avoid anonymous module names in stack traces and React dev tools.
+
+Your app should be fast but also remember **Premature optimisation is the root of all evil**. If you think it’s slow, prove it with a benchmark., the profiler of React Developer Tools (Chrome extension) is your friend!
+
+### General suggestions
+
+* Use `useMemo` mostly just for expensive calculations.
+* Use `React.memo`, `useMemo`, and `useCallback` for reducing re-renders, they shouldn't have many dependencies and the dependencies should be mostly primitive types.
+* Make sure your `React.memo`, `useCallback` or `useMemo` is doing what you think it's doing (is it really preventing re-rendering?).
+* Stop punching yourself every time you blink (fix slow renders before fixing re-renders).
+* Putting your state as close as possible to where it's being used will not only make your code so much easier to read but It would also make your app faster (state colocation).
+* Context should be logically separated, do not add to many values in one context provider. If any of the values of your context changes, all components consuming that context also re-renders even if those components don't use the specific value that was actually changed.
+* You can optimize context by separating the `state` and the `dispatch` function.
+* Know the terms `lazy loading` and `bundle/code splitting`
+* A smaller bundle size usually also means a faster app. You can visualize the code bundles you've generated with `@next/bundle-analyzer`.
+
+------------------------------------------------------
+
+# Updated JavaScript Coding Standards
+
+# **Coding Standards JavaScript / TypeScript**
+
+## Quick Reference
+### Classes:
+Class name:
+* Pascal Case
+* Must be documented
+* Add regions for:
+> * Constants
+> * Private variables
+> * Public variables
+> * Constructor
+> * Public methods
+> * Private methods
+
+Constants:
+* ALL UPPER CASE
+* Must be documented
+
+Private Variables:
+* Underscore `_`, followed by Camel Case name
+* Must be preceded with `private` keyword
+
+Public Variables:
+* Camel Case
+* Must be documented
+* Must be preceded with `public` keyword
+
+Public Methods:
+* Camel Case
+* Must be documented
+* Must be preceded with `public` keyword
+
+Private Methods:
+* Camel Case
+* Must be preceded with `private` keyword
+
+Functions & Methods (general):
+* Camel Case
+* Must declare return type
+* All parameters must declare type
+
+---
+
+### Interfaces:
+Interface name:
+* Capital `I` followed by Pascal Case name
+* Must be documented
+
+Variables & Functions:
+* Camel Case
+* Must be documented
+
+---
+
+### General Rules:
+* Use of `any` variable/function type is **not** allowed
+* Variables may only contain alpha-numeric characters as well as an underscore (restricted to private class-scope variables)
+* Comments `//` followed by space and starts with lower case
+* Opening curly brackets must start on the same line
+* No spaces after closing curly bracket or semi colon
+* Indent: 4 spaces (no tabs)
+* Maximum line length: 200 characters
+* No consecutive blank lines
+* No empty blocks of code.  Add `// todo: description` to the block if code will be implemented later
+* Use of `eval` is not allowed
+* Use of object properties through string literals is restricted, eg. `myVar[“propName”]`
+* No Switch-case fall-through
+* No unreachable code allowed
+* No unused expressions/variables/functions allowed
+* Variables & functions must be declared before they are used
+* Single statements following a control block `if/for/while/do` must be enclosed within curly brackets `{ … }`
+* Only double-quotes may be used for strings
+* All comparison operators must use triple comparison: `===`, `!==`
+* All modules must begin with `use strict`
+* **Do not** use abbreviations on any variable/method name
+* File names should be the same as the class/function name that is implemented inside it
+
+--- 
+
+## Indentation
+The unit of indentation is four spaces. Use of tabs should be avoided.
+
+---
+
+## Line Length
+Avoid lines longer than 200 characters. When a statement will not fit on a single line, it may be necessary to break it. Place the break after an operator, ideally after a comma. A break after an operator decreases the likelihood that a copy-paste error will be masked by semicolon insertion. The next line should be indented double the previous line’s spaces.
+
+---
+
+## Comments
+Be generous with comments. It is useful to leave information that will be read at a later time by people (possibly yourself) who will need to understand what you have done. The comments should be well-written and clear, just like the code they are annotating.
+
+Comments inside functions should start with `//`, followed by a single space.  The text should always start with a lower case.  Example:
+
+	// this is my comment
+
+Documentation comments should start with `/** ` with text placed on a new line.  
+The comment should be closed with `*/` with no text preceding the comment.  Example:
+
+	/**
+	 * Documentation text…
+	 * Some more documentation text…
+	 */
+
+Note that the alignment of the stars `*` is important for documentation generation to happen properly.
+Function parameters must also be documented with the following format:
+
+	/**
+	 * Function description…
+	 * @param ParameterName1 Parameter 1 description…
+	 * @param ParameterName2 Parameter 2 description…
+	 */
+
+---
+
+## Variable Declarations
+All variables should be declared before used.  Use of global variables should be minimised.
+
+Variable declarations should always include a variable type.  The use of `any` is prohibited unless properly documented with a reason for its use.
+
+It is preferred that each variable be given its own line and comment.  It is recommended that variables be initialised by assigning it a default value.
+
+    var currentEntry: string = ""; // currently selected table entry
+    var level: number = 0; // indentation level
+    var size: number = 10; // size of table
+    var obj: SomeObj = null; // description...
+
+JavaScript does not have block scope, so defining variables in blocks can confuse programmers who are experienced with other C family languages. Define all variables at the top of the function.
+
+---
+
+## Function Declarations
+All functions should be declared before they are used. Inner functions should follow the var statement. This helps make it clear what variables are included in its scope.
+
+There should be no space between the name of a function and the ( (left parenthesis) of its parameter list. There should be one space between the ) (right parenthesis) and the { (left curly brace) that begins the statement body. The body itself is indented four spaces. The } (right curly brace) is aligned with the line containing the beginning of the declaration of the function.
+
+    function outer(c: number, d: number): number {
+        var e: number = c * d;
+
+        function inner(a: number, b: number): number {
+            return (e * a) + b;
+        }
+
+        return inner(0, 1);
+    }
+
+Functions should always declare a return type.  If it returns nothing, it should be declared as a `void` function.
+
+	function test(): void {
+	// …
+	}
+
+All function parameters should be declared with a specific type.  The use of `any` is prohibited unless well documented with a reason for its use.
+
+If a function literal is anonymous, there should be one space between the word function and the ( (left parenthesis). If the space is omitted, then it can appear that the function's name is function, which is an incorrect reading.  Again, anonymous functions should always declare a return type.
+
+    div.onclick = function (e): boolean {
+        return false;
+    };
+
+    that = {
+        method: function (): number {
+            return this.datum;
+        },
+        datum: 0
+    };
+
+Use of global functions are restricted – all functions must be contained within a proper namespace.
+
+If a function is declared inside a class, it should always indicate whether or not it is a `private` or `public` function.
+
+When a function is to be invoked immediately, the entire invocation expression should be wrapped in parens so that it is clear that the value being produced is the result of the function and not the function itself.
+
+	var collection = (function (): Object {
+		var keys: string[] = [], values: string[] = [];
+
+		return {
+			get: function (key: string): string {
+				var at: number = keys.indexOf(key);
+				if (at >= 0) {
+					return values[at];
+				}
+			},
+			set: function (key: string, value: string): void {
+				var at: number = keys.indexOf(key);
+				if (at < 0) {
+					at = keys.length;
+				}
+				keys[at] = key;
+				values[at] = value;
+			},
+			remove: function (key: string): void {
+				var at: number = keys.indexOf(key);
+				if (at >= 0) {
+					keys.splice(at, 1);
+					values.splice(at, 1);
+				}
+			}
+		};
+	});
+
+---
+
+## Names
+Names should be formed from the 26 upper and lower case letters (A .. Z, a .. z), the 10 digits (0 .. 9), and _ (underbar). Avoid use of international characters because they may not read well or be understood everywhere. **Do not** use `$` (dollar sign) or `\` (backslash) in names.
+
+The use of the underscore `_` is restricted to indicating private class-scope variables.  It should not be used anywhere else.
+
+Most variables and functions should start with a lower case letter.
+
+Global variables should be in all caps. (JavaScript does not have macros or constants, so there isn't much point in using all caps to signify features that JavaScript doesn't have.)
+
+---
+
+## Class Declarations
+Class names should always use Pascal case (start with a capital letter, with each letter of a new word also starting with a capital letter).
+
+Only if classes are to be reused by other (external) components, should they be preceded with the `export` keyword.
+
+Class sections should always be declared in the following order:
+* Constants
+* Private variables
+* Public variables
+* Constructor
+* Public methods
+* Private methods
+
+Private variables should always start with an underscore.  The rest of the variable name should be written in Camel case.
+
+Public variables, Public methods and Private methods should all be written in Camel case.
+
+Constants must be written in all CAPS.
+
+It is preferable that all sections should be contained within a REGION section for easy collapsing.  The start and end of the regions should include the same description in order for it to display correctly when collapsed.
+
+	/**
+	 * My class documentation…
+	 */
+
+	export class MyClass {
+		// #region constants
+			public MYCONSTANT: number = 100;
+		// #endregion constants
+
+		// #region public variables
+			public someString: string;
+		// #endregion public variables
+
+		// #region private variables
+			private _someNumber: number;
+		// #endregion private variables
+
+		Constructor(param1: number) { }
+
+		// #region public methods
+		/**
+		 * Method description…
+		 * @param parameter1 Parameter 1 description…
+		 */
+
+		public someMethod1(parameter1: string): number {
+			// …
+		}
+
+		// #endregion public methods
+
+		// #region private methods
+
+		/**
+		 * Method description…
+		 * @param parameter1 Parameter 1 description…
+		 */
+		private someMethod1(parameter1: string): number {
+			// …
+		}
+		// #endregion private methods
+	}
+
+---
+
+## Interface Declarations
+Interfaces are never compiled to JavaScript.  The use of interface is to enhance productivity by adding intelli-sense to objects that would otherwise be seen as “any” objects.  It also assists in design-time compilation and error elimination.
+
+Interfaces should always start with a capital `I`, followed by the Pascal-case name of the interface.
+All interface properties and methods should be properly documented.
+
+	export interface IMyInterface {
+		/**
+		 * Variable description…
+		*/
+		myVar: number;
+	}
+
+To indicate that a property or method on an interface is optional (in other words, it might not exist on the object that implements the interface), a question mark can be added after the variable name.
+
+	myVar?: number;
+
+---
+
+## Enums
+Enums are compiled into JavaScript arrays that can return strings or numbers.  Enum names should be written in Camel Case, and should always be documented, as well as each value within the Enum.  Each value should always include a specific numeric value – undefined values (that are created by the compiler) should be avoided.
+
+	/**
+	 * Enum description…
+	 */
+	
+	export enum MyEnum {
+		/**
+		 * description…
+		 */
+		a = 1,
+		/**
+		 * description…
+		 */
+		b = 2
+	}
+
+Accessing the numeric value of an Enum uses the following format:
+
+	var enumVal: number = MyEnum[MyEnum.a];
+
+---
+
+## Regions
+Regions should be used to group sections of code that logically belong together.
+
+A region always starts with two forward-slashes, followed by a space and then the keyword `#region` followed by a space and the name or description of the region.
+
+Regions must always be enclosed with the `#endregion` keyword.
+
+	// #region My Region Name
+	   …code…
+	// #endregion My Region Name
+
+It is convenient to start and end the region with the same name.  This will ensure that the region name stays visible when the region is collapsed.
+
+---
+
+## Statements
+### Simple Statements
+Each line should contain at most one statement. Put a `;` (semicolon) at the end of every simple statement. Note that an assignment statement that is assigning a function literal or object literal is still an assignment statement and must end with a semicolon.
+
+JavaScript allows any expression to be used as a statement. This can mask some errors, particularly in the presence of semicolon insertion. The only expressions that should be used as statements are assignments and invocations.
+
+### Compound Statements
+Compound statements are statements that contain lists of statements enclosed in `{ }` (curly braces).
+* The enclosed statements should be indented four more spaces.
+* The `{` (left curly brace) should be at the end of the line that begins the compound statement.
+* The `}` (right curly brace) should begin a line and be indented to align with the beginning of the line containing the matching `{` (left curly brace).
+* Braces should be used around all statements, even single statements, when they are part of a control structure, such as an if or for statement. This makes it easier to add statements without accidentally introducing bugs.
+
+### Labels
+Statement labels are optional. Only these statements should be labeled: `while, do, for, switch`.
+
+`return` Statement
+
+A `return` statement with a value should not use `( )` (parentheses) around the value. The return value expression must start on the same line as the return keyword in order to avoid semicolon insertion.
+
+`if` Statement
+
+The `if` class of statements should have the following form:
+
+    if (condition) {
+        statements
+    }
+    
+    if (condition) {
+        statements
+    } else {
+        statements
+    }
+    
+    if (condition) {
+        statements
+    } else if (condition) {
+        statements
+    } else {
+        statements
+    }
+`for` Statement
+
+A `for` class of statements should have the following form:
+
+	for (initialisation; condition; update) {
+		statements
+	}
+
+    for (variable in object) {
+        if (filter) {
+            statements
+        } 
+    }
+
+Variables used inside the `for` statement should always be declared before it is used.  It should never be declared in-line.
+
+The first form should be used with arrays and with loops of a predetermined number of iterations.
+
+The second form should be used with objects. Be aware that members that are added to the prototype of the object will be included in the enumeration. It is wise to program defensively by using the `hasOwnProperty` method to distinguish the true members of the `object`:
+
+    for (variable in object) {
+        if (object.hasOwnProperty(variable)) {
+            statements
+        } 
+    }
+
+`while` Statement
+
+A `while` statement should have the following form:
+
+    while (condition) {
+        statements
+    }
+
+`do` Statement
+
+A `do` statement should have the following form:
+
+    do {
+        statements
+    } while (condition);
+
+Unlike the other compound statements, the `do` statement always ends with a `;` (semicolon).
+
+`switch` Statement
+
+A `switch` statement should have the following form:
+
+    switch (expression) {
+        case expression:
+            statements
+        default:
+            statements
+    }
+
+Each group of statements (except the default) should end with `break, return, or throw`. Do not fall through.
+
+`try` Statement
+
+The `try` class of statements should have the following form:
+
+    try {
+        statements
+    } catch (variable) {
+        statements
+    }
+
+    try {
+        statements
+    } catch (variable) {
+        statements
+    } finally {
+        statements
+    }
+
+`continue` Statement
+
+Avoid use of the `continue` statement. It tends to obscure the control flow of the function.
+
+`with` Statement
+
+The `with` statement should not be used.
+
+---
+
+## Whitespace
+Blank lines improve readability by setting off sections of code that are logically related.
+
+Blank spaces should be used in the following circumstances:
+* A keyword followed by `(` (left parenthesis) should be separated by a space.
+    `while (true) {`
+* A blank space should not be used between a function value and its `(` (left parenthesis). This helps to distinguish between keywords and function invocations.
+* All binary operators except `.` (period) and `(` (left parenthesis) and `[` (left bracket) should be separated from their operands by a space.
+* No space should separate a unary operator and its operand except when the operator is a word such as `typeof`.
+* Each `;` (semicolon) in the control part of a for statement should be followed with a space.
+* Whitespace should follow every `,` (comma).
+* There should be **NO** space after closing curly brackets or semi-colons.  These usually indicate the end of a statement or function or class and all code following should be placed on a new line.
+
+---
+
+## Compiler Directives
+### Debug Includes
+To include code for debugging purposes only, the following directives can be used:
+
+Single line: 
+
+	/*IFDEBUG*/ …code…
+
+Multi-line:
+
+	// #region IFDEBUG
+	… code …
+	// #endregion IFDEBUG
+
+If the debugging switch is turned off (Project > Properties > Build), all statements associated with the debug directives will be stripped from the code before the file is compiled.
+
+### Content Embedding
+To embed content into TypeScript files before they are compiled, the following directive can be used:
+
+To include JavaScript:
+
+	/*JSINJECTSTART:file/*JSINJECTEND*/
+
+In this case, `file` is replaced with the relative path to the file that must be embedded.
+Note that the file is injected as-is – not pre-formatting is applied to the file before it is embedded.
+
+To include a HTML file:
+
+	/*HTMLINJECTSTART:file/*HTMLINJECTEND*/
+
+In this case, `file` is replaced with the relative path to the file that must be embedded.
+
+Note that all quotes found in the file are escaped, and Line Feeds and New Line characters are removed, before the file is embedded.
+
+---
+
+## Bonus Suggestions
+`{}` and `[]`
+Use `{}` instead of `new Object()`. Use `[]` instead of `new Array()`.
+
+Use arrays when the member names would be sequential integers. Use objects when the member names are arbitrary strings or names.
+
+`,` (comma) Operator
+
+Avoid the use of the `,` (comma) operator. (This does not apply to the comma separator, which is used in object literals, array literals, var statements, and parameter lists.)
+
+### Block Scope
+In JavaScript blocks do not have scope. Only functions have scope. Do not use blocks except as required by the compound statements.
+
+### Assignment Expressions
+Avoid doing assignments in the condition part of `if` and `while` statements.
+
+Is
+
+	if (a = b) {
+a correct statement? Or was
+
+	if (a == b) {
+intended? Avoid constructs that cannot easily be determined to be correct.
+
+`===` and `!==` Operators.
+Only use the `===` and `!==` operators. The `==` and `!=` operators do type coercion and should not be used.
+
+### Confusing Pluses and Minuses
+Be careful to not follow a `+` with `+` or `++`. This pattern can be confusing. Insert parens between them to make your intention clear.
+
+    total = subtotal + +myInput.value;
+is better written as
+
+    total = subtotal + (+myInput.value);
+so that the `+` `+` is not misread as `++`.
+
+`eval` is Evil
+The `eval` function is the most misused feature of JavaScript. Avoid it.
+`eval` has aliases. Do not use the Function constructor. Do not pass strings to `setTimeout` or `setInterval`.
+
+------------------------------------------------------
+
+
+
+
+# Provider Pattern Contract (Strict)
+
+## Purpose
+
+This file defines the exact provider setup style required in this frontend.
+
+## Required Structure for Every Provider
+
+```text
+providers/<feature>Provider/
+  actions.tsx
+  context.tsx
+  index.tsx
+  reducer.tsx
+```
+
+This structure is mandatory. Do not deviate.
+
+## Canonical Example (Auth Provider)
+
+### `actions.tsx`
+
+```tsx
+import { createAction } from "redux-actions";
+import { IAuthStateContext, IUserLoginResponse } from "./context";
+
+export enum AuthActionEnums {
+  loginPending = "LOGIN_PENDING",
+  loginSuccess = "LOGIN_SUCCESS",
+  loginError = "LOGIN_ERROR",
+
+  registerPending = "REGISTER_PENDING",
+  registerSuccess = "REGISTER_SUCCESS",
+  registerError = "REGISTER_ERROR",
+
+  logoutPending = "LOGOUT_PENDING",
+  logoutError = "LOGOUT_ERROR",
+  logoutSuccess = "LOGOUT_SUCCESS",
+
+  getMePending = "GET_ME_PENDING",
+  getMeSuccess = "GET_ME_SUCCESS",
+  getMeError = "GET_ME_ERROR",
+}
+
+export const loginPending = createAction<IAuthStateContext>(
+  AuthActionEnums.loginPending,
+  () => ({
+    isPending: true,
+    isError: false,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const loginSuccess = createAction<IAuthStateContext, IUserLoginResponse>(
+  AuthActionEnums.loginSuccess,
+  (user: IUserLoginResponse) => ({
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    user,
+    isAuthenticated: true,
+  }),
+);
+
+export const loginError = createAction<IAuthStateContext>(
+  AuthActionEnums.loginError,
+  () => ({
+    isPending: false,
+    isError: true,
+    user: null,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const registerPending = createAction<IAuthStateContext>(
+  AuthActionEnums.registerPending,
+  () => ({
+    isPending: true,
+    isError: false,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const registerSuccess = createAction<
+  IAuthStateContext,
+  IUserLoginResponse
+>(AuthActionEnums.registerSuccess, (user: IUserLoginResponse) => ({
+  isPending: false,
+  isError: false,
+  isSuccess: true,
+  user,
+  isAuthenticated: true,
+}));
+
+export const registerError = createAction<IAuthStateContext>(
+  AuthActionEnums.registerError,
+  () => ({
+    isPending: false,
+    isError: true,
+    user: null,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const logoutPending = createAction<IAuthStateContext>(
+  AuthActionEnums.logoutPending,
+  () => ({
+    isPending: true,
+    isError: false,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const logoutError = createAction<IAuthStateContext>(
+  AuthActionEnums.logoutError,
+  () => ({
+    isPending: false,
+    isError: true,
+    isSuccess: false,
+    user: null,
+    isAuthenticated: false,
+  }),
+);
+
+export const logoutSuccess = createAction<IAuthStateContext>(
+  AuthActionEnums.logoutSuccess,
+  () => ({
+    isSuccess: false,
+    isPending: false,
+    isError: false,
+    user: null,
+    isAuthenticated: false,
+  }),
+);
+
+export const getMePending = createAction<IAuthStateContext>(
+  AuthActionEnums.getMePending,
+  () => ({
+    isPending: true,
+    isError: false,
+    isSuccess: false,
+    isAuthenticated: false,
+  }),
+);
+
+export const getMeSuccess = createAction<IAuthStateContext, IUserLoginResponse>(
+  AuthActionEnums.getMeSuccess,
+  (user: IUserLoginResponse) => ({
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    user,
+    isAuthenticated: true,
+  }),
+);
+
+export const getMeError = createAction<IAuthStateContext>(
+  AuthActionEnums.getMeError,
+  () => ({
+    isPending: false,
+    isError: true,
+    isSuccess: false,
+    user: null,
+    isAuthenticated: false,
+  }),
+);
+```
+
+### `context.tsx`
+
+```tsx
+import { createContext } from "react";
+
+export interface IUserLoginRequest {
+  email?: string | null;
+  password?: string | null;
+}
+
+export interface IUserRegisterRequest {
+  email?: string | null;
+  password?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  tenantName?: string | null;
+  tenantId?: string | null;
+  role?: string | null;
+}
+
+export interface IUserLoginResponse {
+  token?: string | null;
+  userId?: string;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  roles?: string[] | null;
+  tenantId?: string | null;
+  expiresAt?: string;
+}
+
+export interface IAuthStateContext {
+  isSuccess: boolean;
+  isPending: boolean;
+  isError: boolean;
+  isAuthenticated: boolean;
+  user?: IUserLoginResponse | null;
+}
+
+export interface IAuthActionContext {
+  login: (payload: IUserLoginRequest) => Promise<void>;
+  register: (payload: IUserRegisterRequest) => Promise<void>;
+  logout: () => Promise<void>;
+  getMe: () => Promise<void>;
+}
+
+export const INITIAL_STATE: IAuthStateContext = {
+  isSuccess: false,
+  isPending: false,
+  isError: false,
+  isAuthenticated: false,
+  user: null,
+};
+
+export const AuthStateContext = createContext<IAuthStateContext>(INITIAL_STATE);
+
+export const AuthActionContext = createContext<IAuthActionContext>(undefined!);
+```
+
+### `index.tsx`
+
+```tsx
+"use client";
+import React, { useReducer, useContext, useEffect } from "react";
+import {
+  INITIAL_STATE,
+  AuthActionContext,
+  AuthStateContext,
+  IUserLoginRequest,
+  IUserRegisterRequest,
+} from "./context";
+import { AuthReducer } from "./reducer";
+import {
+  loginPending,
+  loginSuccess,
+  loginError,
+  registerPending,
+  registerSuccess,
+  registerError,
+  logoutPending,
+  logoutSuccess,
+  logoutError,
+  getMePending,
+  getMeSuccess,
+  getMeError,
+} from "./actions";
+import { axiosInstance } from "@/utils/axiosInstance";
+import { useRouter } from "next/navigation";
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  /* Functional component formatthroughout app
+   * All provider logic (state management, side effects, etc.) must be contained within this component.
+   * Hooks defined first at the top of component, followed by , helper functions, action functions, and then the return statement with context providers.
+   * The same applies to non provider components as well exept for them returning the ui components, maintain this structure for consistency and readability.
+   */
+
+  const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
+
+  const login = async (payload: IUserLoginRequest) => {
+    dispatch(loginPending());
+    await axiosInstance()
+      .post("/api/Auth/login", payload)
+      .then((response) => {
+        dispatch(loginSuccess(response.data));
+        sessionStorage.setItem("token", response.data.token);
+        router.push("/dashboard");
+      })
+      .catch((error) => {
+        dispatch(loginError());
+        console.error(error.message);
+      });
+  };
+
+  const register = async (payload: IUserRegisterRequest) => {
+    dispatch(registerPending());
+    await axiosInstance()
+      .post("/api/Auth/register", payload)
+      .then((response) => {
+        dispatch(registerSuccess(response.data));
+        sessionStorage.setItem("token", response.data.token);
+        router.push("/dashboard");
+      })
+      .catch((error) => {
+        console.error(error);
+        dispatch(registerError());
+      });
+  };
+
+  const logout = async () => {
+    dispatch(logoutPending());
+    await Promise.resolve()
+      .then(() => {
+        sessionStorage.removeItem("token");
+        dispatch(logoutSuccess());
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+        dispatch(logoutError());
+      });
+  };
+
+  const getMe = async () => {
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      dispatch(getMePending());
+      await axiosInstance()
+        .get("/api/Auth/me")
+        .then((response) => {
+          dispatch(getMeSuccess(response.data));
+        })
+        .catch((error) => {
+          console.error(error);
+          sessionStorage.removeItem("token");
+          dispatch(getMeError());
+        });
+    }
+  };
+
+  return (
+    <AuthStateContext.Provider value={state}>
+      <AuthActionContext.Provider value={{ login, register, logout, getMe }}>
+        {children}
+      </AuthActionContext.Provider>
+    </AuthStateContext.Provider>
+  );
+};
+
+export const useAuthState = () => {
+  const context = useContext(AuthStateContext);
+  if (context === undefined) {
+    throw new Error("useAuthState must be used within an AuthProvider");
+  }
+  return context;
+};
+
+export const useAuthActions = () => {
+  const context = useContext(AuthActionContext);
+  if (context === undefined) {
+    throw new Error("useAuthActions must be used within an AuthProvider");
+  }
+  return context;
+};
+```
+
+### `reducer.tsx`
+
+```tsx
+import { handleActions } from "redux-actions";
+import { INITIAL_STATE, IAuthStateContext } from "./context";
+import { AuthActionEnums } from "./actions";
+
+export const AuthReducer = handleActions<
+  IAuthStateContext,
+  Partial<IAuthStateContext>
+>(
+  {
+    [AuthActionEnums.loginPending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.loginSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.loginError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+
+    [AuthActionEnums.registerPending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.registerSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.registerError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+
+    [AuthActionEnums.logoutPending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.logoutError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.logoutSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+
+    [AuthActionEnums.getMePending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.getMeSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [AuthActionEnums.getMeError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+  },
+  INITIAL_STATE,
+);
+```
+
+## Required Axios Factory
+
+```ts
+import axios from "axios";
+
+export const axiosInstance = () => {
+  const token =
+    globalThis.window !== undefined ? sessionStorage.getItem("token") : null;
+  const baseURL = process.env.NEXT_PUBLIC_API_LINK;
+
+  return axios.create({
+    baseURL: baseURL,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+};
+```
+
+## Required Page/Provider Composition Style
+
+```tsx
+"use client";
+
+import React, { useEffect } from "react";
+import { Row, Col, Typography, Button, Divider } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
+import {
+  DashboardProvider,
+  useDashboardActions,
+  useDashboardState,
+} from "@/providers/dashboardProvider";
+import { IContractDto } from "@/providers/contractProvider/context";
+import { ISalesPerformanceDto } from "@/providers/dashboardProvider/context";
+import { useAuthState } from "@/providers/authProvider";
+import { isAdminOrManager } from "@/utils/roles";
+import { toArray } from "@/utils/helpers";
+import KpiCards from "@/components/dashboard/overview/KpiCards";
+import ActivitiesSummaryCards from "@/components/dashboard/overview/ActivitiesSummaryCards";
+import PipelineBarChart from "@/components/dashboard/overview/PipelineBarChart";
+import RevenueTrendChart from "@/components/dashboard/overview/RevenueTrendChart";
+import ContractsExpiringTable from "@/components/dashboard/overview/ContractsExpiringTable";
+import TopPerformersTable from "@/components/dashboard/overview/TopPerformersTable";
+import { useStyles } from "@/components/dashboard/overview/style/style";
+import AiInsightsCard from "@/components/aiInsightsCard";
+
+const { Title } = Typography;
+
+const DashboardContent: React.FC = () => {
+  /* Functional component formatthroughout app
+   * All provider logic (state management, side effects, etc.) must be contained within this component.
+   * Hooks defined first at the top of component, followed by , helper functions, action functions, and then the return statement composing the UI.
+   */
+  const { user } = useAuthState();
+  const canViewTopPerformers = isAdminOrManager(user?.roles);
+  const {
+    getDashboardOverview,
+    getSalesPerformance,
+    getContractsExpiring,
+    getActivitiesSummary,
+    getDashboardPipelineMetrics,
+  } = useDashboardActions();
+  const { isPending, overview, salesPerformance, contractsExpiring } =
+    useDashboardState();
+  const { styles } = useStyles();
+
+  useEffect(() => {
+    getDashboardOverview();
+    if (canViewTopPerformers) getSalesPerformance(5);
+    getContractsExpiring(30);
+    getActivitiesSummary();
+    getDashboardPipelineMetrics();
+  }, [
+    getDashboardOverview,
+    getSalesPerformance,
+    getContractsExpiring,
+    getActivitiesSummary,
+    getDashboardPipelineMetrics,
+    canViewTopPerformers,
+  ]);
+
+  const fetchAll = () => {
+    getDashboardOverview();
+    if (canViewTopPerformers) getSalesPerformance(5);
+    getContractsExpiring(30);
+    getActivitiesSummary();
+    getDashboardPipelineMetrics();
+  };
+
+  const performanceList: ISalesPerformanceDto[] = Array.isArray(
+    salesPerformance,
+  )
+    ? salesPerformance
+    : [];
+  const expiringList = toArray<IContractDto>(
+    contractsExpiring as IContractDto[] | null,
+  );
+  const pipelineStages = overview?.pipeline.stages ?? [];
+
+  const dashboardContext = {
+    pipelineValue: overview?.opportunities?.pipelineValue,
+    winRate: overview?.opportunities?.winRate,
+    totalOpportunities: overview?.opportunities?.totalCount,
+    wonDeals: overview?.opportunities?.wonCount,
+    upcomingActivities: overview?.activities?.upcomingCount,
+    overdueActivities: overview?.activities?.overdueCount,
+    activeContracts: overview?.contracts?.totalActiveCount,
+    contractValue: overview?.contracts?.totalContractValue,
+    expiringContracts: overview?.contracts?.expiringThisMonthCount,
+    revenueThisMonth: overview?.revenue?.thisMonth,
+    revenueThisQuarter: overview?.revenue?.thisQuarter,
+    revenueThisYear: overview?.revenue?.thisYear,
+  };
+
+  return (
+    <div className={styles.pageWrapper}>
+      <div className={styles.pageHeader}>
+        <Title level={2} className={styles.pageTitle}>
+          Dashboard Overview
+        </Title>
+        <Button
+          icon={<ReloadOutlined spin={isPending} />}
+          onClick={fetchAll}
+          loading={isPending}
+          className={styles.refreshBtn}
+        >
+          Refresh
+        </Button>
+      </div>
+
+      <KpiCards overview={overview} loading={isPending} />
+
+      <Divider className={styles.sectionDivider} />
+
+      <div className={styles.activitiesHeader}>
+        <Title level={5} className={styles.sectionSubtitle}>
+          Activities Overview
+        </Title>
+        <ActivitiesSummaryCards
+          activities={overview?.activities}
+          loading={isPending}
+        />
+      </div>
+
+      <Divider className={styles.sectionDivider} />
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={12}>
+          <PipelineBarChart stages={pipelineStages} loading={isPending} />
+        </Col>
+        <Col xs={24} lg={12}>
+          <RevenueTrendChart revenue={overview?.revenue} loading={isPending} />
+        </Col>
+      </Row>
+
+      <Divider className={styles.sectionDivider} />
+
+      <AiInsightsCard
+        data={dashboardContext}
+        type="dashboard"
+        disabled={!overview}
+      />
+
+      <Divider className={styles.sectionDivider} />
+
+      <Row gutter={[16, 16]}>
+        {canViewTopPerformers && (
+          <Col xs={24} xl={14}>
+            <TopPerformersTable
+              performers={performanceList}
+              loading={isPending}
+            />
+          </Col>
+        )}
+        <Col xs={24} xl={canViewTopPerformers ? 10 : 24}>
+          <ContractsExpiringTable
+            contracts={expiringList}
+            loading={isPending}
+          />
+        </Col>
+      </Row>
+    </div>
+  );
+};
+
+const DashboardPage: React.FC = () => (
+  <DashboardProvider>
+    <DashboardContent />
+  </DashboardProvider>
+);
+
+export default DashboardPage;
+```
+
+## Required `antd-style` Pattern Example
+
+```tsx
+import { createStyles, css } from "antd-style";
+
+export const useStyles = createStyles(({ token }) => ({
+  container: css`
+    min-height: 100vh;
+    background: radial-gradient(circle at 0% 0%, #3a3f47 0%, #1a1c22 100%);
+    width: 100%;
+  `,
+
+  sider: css`
+    background: rgba(58, 63, 71, 0.4) !important;
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+    .ant-layout-sider-children {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ant-menu {
+      background: transparent !important;
+      border: none !important;
+    }
+
+    .ant-menu-item-selected {
+      background-color: rgba(255, 255, 255, 0.12) !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+  `,
+
+  logoWrapper: css`
+    height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    margin-bottom: 8px;
+  `,
+
+  header: css`
+    &.ant-layout-header {
+      background: rgba(58, 63, 71, 0.6) !important;
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+  `,
+
+  triggerBtn: css`
+    &.ant-btn {
+      color: white;
+      font-size: 18px;
+      width: 64px;
+      height: 64px;
+      border: none;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: ${token.colorPrimary};
+      }
+    }
+  `,
+
+  content: css`
+    margin: 24px 16px;
+    padding: 24px;
+    min-height: 280px;
+    background: rgba(58, 63, 71, 0.3) !important;
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+    h1,
+    p {
+      color: white;
+    }
+  `,
+
+  imageIcon: css`
+    filter: brightness(0) invert(1);
+    object-fit: contain;
+  `,
+
+  logoutBtn: css`
+    &.ant-btn {
+      color: white;
+      font-size: 14px;
+      height: 64px;
+      padding: 0 16px;
+      margin-left: auto;
+      border: none;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: ${token.colorError};
+      }
+    }
+  `,
+
+  innerLayout: css`
+    &.ant-layout {
+      background: transparent;
+    }
+  `,
+}));
+```
+
+## Inline Styling Rule
+
+Inline styling should never be used.
+All styling must be defined through the required `style.ts` pattern using `antd-style`.
+
+## Enforcement Rule
+
+-For every new provider module, copy this exact pattern and only rename feature-specific types/actions/endpoints.
+No structural deviations are allowed.
+- folders should only contain the 4 files, : action, context, index, reducer
+Ensure to put layouts in the layouts folder at root of netxjs app, components in the components folder, utils in utis folder, hoc ='s in the hoc folder routes in the routes folder, types in the types folder, constants in the constants folder ensure in any component file no loose data, types, interfaces or helper methods are put in their correct files and folders and importted
+

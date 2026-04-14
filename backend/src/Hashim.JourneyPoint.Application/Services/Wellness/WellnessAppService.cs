@@ -1,3 +1,4 @@
+using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
 using Abp.UI;
 using Hashim.JourneyPoint.Common.Services.Wellness.Dtos;
@@ -9,6 +10,7 @@ using Shesha;
 using Shesha.DynamicEntities.Dtos;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hashim.JourneyPoint.Common.Services.Wellness
@@ -23,29 +25,121 @@ namespace Hashim.JourneyPoint.Common.Services.Wellness
         private readonly IRepository<WellnessCheckIn, Guid> _checkInRepository;
         private readonly IRepository<WellnessQuestion, Guid> _questionRepository;
         private readonly IRepository<Journey, Guid> _journeyRepository;
+        private readonly IRepository<Hire, Guid> _hireRepository;
         private readonly WellnessManager _wellnessManager;
 
         public WellnessAppService(
             IRepository<WellnessCheckIn, Guid> checkInRepository,
             IRepository<WellnessQuestion, Guid> questionRepository,
             IRepository<Journey, Guid> journeyRepository,
+            IRepository<Hire, Guid> hireRepository,
             WellnessManager wellnessManager)
         {
             _checkInRepository = checkInRepository;
             _questionRepository = questionRepository;
             _journeyRepository = journeyRepository;
+            _hireRepository    = hireRepository;
             _wellnessManager   = wellnessManager;
         }
 
-        /// <summary>Returns a summary of all wellness check-ins for a hire, ordered by period.</summary>
+        /// <summary>Returns all wellness check-ins for a hire. Facilitator use.</summary>
         [HttpGet]
-        public async Task<List<DynamicDto<WellnessCheckIn, Guid>>> GetHireWellnessOverview(Guid hireId)
+        public async Task<PagedResultDto<DynamicDto<WellnessCheckIn, Guid>>> GetHireWellnessOverview(Guid hireId)
         {
             var checkIns = await _checkInRepository.GetAllListAsync(c => c.HireId == hireId);
-            var result = new List<DynamicDto<WellnessCheckIn, Guid>>();
+            var items = new List<DynamicDto<WellnessCheckIn, Guid>>();
             foreach (var checkIn in checkIns)
-                result.Add(await MapToDynamicDtoAsync<WellnessCheckIn, Guid>(checkIn));
-            return result;
+                items.Add(await MapToDynamicDtoAsync<WellnessCheckIn, Guid>(checkIn));
+            return new PagedResultDto<DynamicDto<WellnessCheckIn, Guid>>(items.Count, items);
+        }
+
+        /// <summary>Returns all wellness check-ins for the currently logged-in hire.</summary>
+        [HttpGet]
+        public async Task<PagedResultDto<DynamicDto<WellnessCheckIn, Guid>>> GetMyCheckIns()
+        {
+            var hire = await _hireRepository.FirstOrDefaultAsync(h => h.PlatformUserId == AbpSession.UserId);
+            if (hire == null)
+                throw new UserFriendlyException("No hire record found for the current user.");
+
+            var checkIns = await _checkInRepository.GetAllListAsync(c => c.HireId == hire.Id);
+            var items = new List<DynamicDto<WellnessCheckIn, Guid>>();
+            foreach (var checkIn in checkIns)
+                items.Add(await MapToDynamicDtoAsync<WellnessCheckIn, Guid>(checkIn));
+            return new PagedResultDto<DynamicDto<WellnessCheckIn, Guid>>(items.Count, items);
+        }
+
+        /// <summary>
+        /// Returns the current pending wellness check-in for the logged-in hire.
+        /// Returns the earliest Pending check-in by scheduled date, or throws if none exist.
+        /// </summary>
+        [HttpGet]
+        public async Task<DynamicDto<WellnessCheckIn, Guid>> GetMyPendingCheckIn()
+        {
+            var hire = await _hireRepository.FirstOrDefaultAsync(h => h.PlatformUserId == AbpSession.UserId);
+            if (hire == null)
+                throw new UserFriendlyException("No hire record found for the current user.");
+
+            var checkIns = await _checkInRepository.GetAllListAsync(c =>
+                c.HireId == hire.Id && c.Status == WellnessCheckInStatus.Pending);
+
+            checkIns.Sort((a, b) => a.ScheduledDate.CompareTo(b.ScheduledDate));
+            var pending = checkIns.Count > 0 ? checkIns[0] : null;
+
+            if (pending == null)
+                throw new UserFriendlyException("No pending wellness check-in found for the current user.");
+
+            return await MapToDynamicDtoAsync<WellnessCheckIn, Guid>(pending);
+        }
+
+        /// <summary>
+        /// Returns a paged list of WellnessQuestions across every check-in for the currently logged-in hire.
+        /// Use this as the data source for a question-level table in the enrolee portal.
+        /// </summary>
+        [HttpGet]
+        public async Task<PagedResultDto<DynamicDto<WellnessQuestion, Guid>>> GetMyQuestions(int pageNumber = 1)
+        {
+            const int PAGE_SIZE = 10;
+
+            var hire = await _hireRepository.FirstOrDefaultAsync(h => h.PlatformUserId == AbpSession.UserId);
+            if (hire == null)
+                throw new UserFriendlyException("No hire record found for the current user.");
+
+            var checkIns = await _checkInRepository.GetAllListAsync(c => c.HireId == hire.Id);
+
+            var allQuestions = new List<WellnessQuestion>();
+            foreach (var checkIn in checkIns)
+            {
+                var questions = await _questionRepository.GetAllListAsync(q => q.WellnessCheckInId == checkIn.Id);
+                allQuestions.AddRange(questions);
+            }
+
+            var totalCount = allQuestions.Count;
+            var page = allQuestions
+                .Skip((pageNumber - 1) * PAGE_SIZE)
+                .Take(PAGE_SIZE)
+                .ToList();
+
+            var items = new List<DynamicDto<WellnessQuestion, Guid>>();
+            foreach (var question in page)
+                items.Add(await MapToDynamicDtoAsync<WellnessQuestion, Guid>(question));
+
+            return new PagedResultDto<DynamicDto<WellnessQuestion, Guid>>(totalCount, items);
+        }
+
+        /// <summary>
+        /// Returns all WellnessQuestions for a specific check-in.
+        /// Use this when drilling into a single check-in from the enrolee portal.
+        /// </summary>
+        [HttpGet]
+        public async Task<PagedResultDto<DynamicDto<WellnessQuestion, Guid>>> GetQuestionsForCheckIn(Guid checkInId)
+        {
+            var questions = await _questionRepository.GetAllListAsync(q => q.WellnessCheckInId == checkInId);
+
+            var items = new List<DynamicDto<WellnessQuestion, Guid>>();
+            foreach (var question in questions)
+                items.Add(await MapToDynamicDtoAsync<WellnessQuestion, Guid>(question));
+
+            return new PagedResultDto<DynamicDto<WellnessQuestion, Guid>>(items.Count, items);
         }
 
         /// <summary>Returns the full detail of a single check-in including all questions and answers.</summary>

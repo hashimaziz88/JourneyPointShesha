@@ -106,7 +106,26 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
             return new PagedResultDto<DynamicDto<JourneyTask, Guid>>(items.Count, items);
         }
 
-        /// <summary>Returns all Enrolee-assigned JourneyTasks for the currently logged-in hire's active journey.</summary>
+        /// <summary>Returns all JourneyTasks for the specified hire's active journey. Facilitator use.</summary>
+        [HttpGet]
+        public async Task<PagedResultDto<DynamicDto<JourneyTask, Guid>>> GetTasksByHireId(Guid hireId)
+        {
+            var journey = await _journeyRepository.FirstOrDefaultAsync(j =>
+                j.HireId == hireId && j.Status == JourneyStatus.Active);
+
+            if (journey == null)
+                throw new UserFriendlyException($"No active journey found for hire '{hireId}'.");
+
+            var tasks = await _taskRepository.GetAllListAsync(t => t.JourneyId == journey.Id);
+
+            var items = new List<DynamicDto<JourneyTask, Guid>>();
+            foreach (var task in tasks)
+                items.Add(await MapToDynamicDtoAsync<JourneyTask, Guid>(task));
+
+            return new PagedResultDto<DynamicDto<JourneyTask, Guid>>(items.Count, items);
+        }
+
+        /// <summary>Returns all JourneyTasks for the currently logged-in hire's active journey.</summary>
         [HttpGet]
         public async Task<PagedResultDto<DynamicDto<JourneyTask, Guid>>> GetMyTasks()
         {
@@ -120,9 +139,7 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
             if (journey == null)
                 throw new UserFriendlyException("No active journey found for the current user.");
 
-            var tasks = await _taskRepository.GetAllListAsync(t =>
-                t.JourneyId == journey.Id
-                && t.AssignmentTarget == OnboardingTaskAssignmentTarget.Enrolee);
+            var tasks = await _taskRepository.GetAllListAsync(t => t.JourneyId == journey.Id);
 
             var items = new List<DynamicDto<JourneyTask, Guid>>();
             foreach (var task in tasks)
@@ -190,10 +207,6 @@ namespace Hashim.JourneyPoint.Common.Services.Hires
         public async Task<DynamicDto<JourneyTask, Guid>> CompleteMyTask(Guid taskId)
         {
             var task = await _taskRepository.GetAsync(taskId);
-
-            if (task.AcknowledgementRule == OnboardingTaskAcknowledgementRule.Required
-                && task.AcknowledgedAt == null)
-                throw new UserFriendlyException("Task must be acknowledged before it can be completed.");
 
             task.Status = JourneyTaskStatus.Completed;
             task.CompletedAt = DateTime.UtcNow;
