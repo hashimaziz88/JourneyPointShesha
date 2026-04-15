@@ -27,6 +27,8 @@ namespace Hashim.JourneyPoint.Domain.Domain.Engagement
         private const decimal OVERDUE_PENALTY_PER_TASK   = 0.15m;
         private const decimal MAX_SCORE                  = 100m;
         private const decimal MIN_SCORE                  = 0m;
+        /// <summary>Stored when the hire has not yet completed any tasks. -1 distinguishes "no activity" from "active today".</summary>
+        private const int     NO_ACTIVITY_SENTINEL       = -1;
 
         #endregion
 
@@ -82,7 +84,7 @@ namespace Hashim.JourneyPoint.Domain.Domain.Engagement
             {
                 HireId                = hireId,
                 JourneyId             = journeyId,
-                CompletionRate        = completionRate * MAX_SCORE,
+                CompletionRate        = Math.Floor(completionRate * 10000m) / 10000m,
                 DaysSinceLastActivity = GetDaysSinceLastActivity(tasks, today),
                 OverdueTaskCount      = tasks.Count(t => t.DueOn.Date < today && t.Status == JourneyTaskStatus.Pending),
                 CompositeScore        = compositeScore,
@@ -107,6 +109,9 @@ namespace Hashim.JourneyPoint.Domain.Domain.Engagement
                 .Select(t => t.CompletedAt!.Value.Date)
                 .OrderByDescending(d => d)
                 .FirstOrDefault();
+
+            // No tasks are due yet — hire is in the onboarding grace period, treat as fully active
+            if (lastCompletion == default && !tasks.Any(t => t.DueOn.Date <= today)) return 1m;
 
             if (lastCompletion == default) return 0m;
 
@@ -144,7 +149,7 @@ namespace Hashim.JourneyPoint.Domain.Domain.Engagement
                 .OrderByDescending(d => d)
                 .FirstOrDefault();
 
-            return lastDate == default ? int.MaxValue : (today - lastDate).Days;
+            return lastDate == default ? NO_ACTIVITY_SENTINEL : (today - lastDate).Days;
         }
 
         #endregion

@@ -1,5 +1,4 @@
 using Abp.Domain.Repositories;
-using Abp.UI;
 using Hashim.JourneyPoint.Domain.Domain.Enums;
 using Hashim.JourneyPoint.Domain.Domain.OnboardingPlans;
 using Microsoft.AspNetCore.Mvc;
@@ -30,29 +29,21 @@ namespace Hashim.JourneyPoint.Common.Services.OnboardingPlans
             _planManager    = planManager;
         }
 
-        /// <summary>Publishes a Draft OnboardingPlan, making it available for hire enrolment.</summary>
+        /// <summary>Publishes an OnboardingPlan, making it available for hire enrolment.</summary>
         [HttpPost]
         public async Task<DynamicDto<OnboardingPlan, Guid>> Publish(Guid id)
         {
             var plan = await _planRepository.GetAsync(id);
-
-            if (plan.Status != OnboardingPlanStatus.Draft)
-                throw new UserFriendlyException("Only Draft plans can be published.");
-
             plan.Status = OnboardingPlanStatus.Published;
             var updated = await _planRepository.UpdateAsync(plan);
             return await MapToDynamicDtoAsync<OnboardingPlan, Guid>(updated);
         }
 
-        /// <summary>Archives a Published plan so it can no longer be assigned to new hires.</summary>
+        /// <summary>Archives an OnboardingPlan so it can no longer be assigned to new hires.</summary>
         [HttpPost]
         public async Task<DynamicDto<OnboardingPlan, Guid>> Archive(Guid id)
         {
             var plan = await _planRepository.GetAsync(id);
-
-            if (plan.Status != OnboardingPlanStatus.Published)
-                throw new UserFriendlyException("Only Published plans can be archived.");
-
             plan.Status = OnboardingPlanStatus.Archived;
             var updated = await _planRepository.UpdateAsync(plan);
             return await MapToDynamicDtoAsync<OnboardingPlan, Guid>(updated);

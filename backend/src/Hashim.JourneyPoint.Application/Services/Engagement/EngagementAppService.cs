@@ -1,4 +1,3 @@
-using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
 using Abp.UI;
 using Hashim.JourneyPoint.Common.Services.Engagement.Dtos;
@@ -163,12 +162,20 @@ namespace Hashim.JourneyPoint.Common.Services.Engagement
 
         /// <summary>
         /// Returns the last 10 engagement snapshots for a hire ordered chronologically.
+        /// Auto-computes a fresh snapshot if none exist or the latest is older than the stale threshold.
         /// Used as the URL data source for the engagement score line chart.
         /// </summary>
         [HttpGet]
-        public async Task<PagedResultDto<DynamicDto<EngagementSnapshot, Guid>>> GetScoreHistory(Guid hireId)
+        public async Task<List<DynamicDto<EngagementSnapshot, Guid>>> GetScoreHistory(Guid hireId)
         {
+            var fresh = await EnsureFreshSnapshotAsync(hireId);
+
             var snapshots = await _snapshotRepository.GetAllListAsync(s => s.HireId == hireId);
+
+            // NHibernate may not have flushed the insert yet — add the fresh snapshot manually if missing
+            if (fresh != null && !snapshots.Any(s => s.Id == fresh.Id))
+                snapshots.Add(fresh);
+
             var page = snapshots
                 .OrderBy(s => s.ComputedAt)
                 .TakeLast(10)
@@ -178,10 +185,37 @@ namespace Hashim.JourneyPoint.Common.Services.Engagement
             foreach (var snapshot in page)
                 items.Add(await MapToDynamicDtoAsync<EngagementSnapshot, Guid>(snapshot));
 
-            return new PagedResultDto<DynamicDto<EngagementSnapshot, Guid>>(snapshots.Count, items);
+            return items;
         }
 
         #region Private Methods
+
+        private const int STALE_THRESHOLD_HOURS = 24;
+
+        /// <summary>
+        /// Computes and persists a new snapshot if none exist for the hire,
+        /// or if the latest snapshot is older than the stale threshold.
+        /// </summary>
+        private async Task<EngagementSnapshot?> EnsureFreshSnapshotAsync(Guid hireId)
+        {
+            // Prefer Active, fall back to any journey so scores are available regardless of plan status
+            var journeys = await _journeyRepository.GetAllListAsync(j => j.HireId == hireId);
+            var journey = journeys.FirstOrDefault(j => j.Status == JourneyStatus.Active)
+                          ?? journeys.OrderByDescending(j => j.CreationTime).FirstOrDefault();
+
+            if (journey == null) return null;
+
+            var snapshots = await _snapshotRepository.GetAllListAsync(s => s.HireId == hireId);
+            var latest = snapshots.OrderByDescending(s => s.ComputedAt).FirstOrDefault();
+
+            var isStale = latest == null
+                || (DateTime.UtcNow - latest.ComputedAt).TotalHours >= STALE_THRESHOLD_HOURS;
+
+            if (isStale)
+                return await _engagementManager.ComputeAndPersistAsync(hireId, journey.Id);
+
+            return null;
+        }
 
         private async Task<dynamic> BuildHireSummaryAsync(Hire hire)
         {
